@@ -6,10 +6,12 @@
   --color-navy: #103d5a;     /* faixa, footer */
   --color-mist: #eaf2f8;     /* hero, cards, CTA */
   --color-ink: #172c3a;      /* Texto */
+  --color-muted: #5c7180;    /* Texto secundário */
   --color-success: #197451;  /* Sucesso */
   --color-warning: #a65412;  /* Atenção */
   --color-danger: #a9343b;   /* Erro */
   --color-line: #cad8e1;     /* Divisor: bordas */
+  --color-focus: #ffb23f;    /* Contorno de foco (teclado) */
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
@@ -19,5 +21,9 @@
     background-color: #ffffff;
     color: var(--color-ink);
     font-family: var(--font-sans);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
   }
 }
