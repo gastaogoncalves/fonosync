@@ -1,7 +1,15 @@
 export default function App() {
   return (
-    <h1 className="text-4xl font-bold text-blue-600 p-10">
-      FonoSync funcionando!
-    </h1>
+    <main className="p-10">
+      <h1 className="font-serif text-5xl text-navy">
+        Tecnologia que transforma a terapia fonoaudiológica.
+      </h1>
+      <p className="mt-4 bg-mist p-4 border border-line">
+        Texto teste.
+      </p>
+      <button className="mt-4 bg-primary text-white px-4 py-2">
+        Experimentar Avaliação
+      </button>
+    </main>
   )
 }

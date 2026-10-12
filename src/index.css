@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+@theme {
+
+  --color-primary: #17689b;  /* botões, links, barras */
+  --color-navy: #103d5a;     /* faixa, footer */
+  --color-mist: #eaf2f8;     /* hero, cards, CTA */
+  --color-ink: #172c3a;      /* Texto */
+  --color-success: #197451;  /* Sucesso */
+  --color-warning: #a65412;  /* Atenção */
+  --color-danger: #a9343b;   /* Erro */
+  --color-line: #cad8e1;     /* Divisor: bordas */
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: #ffffff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+}
