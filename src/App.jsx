@@ -1,10 +1,8 @@
-import Header from './components/Header'
+import React from 'react';
+import LandingPage from './pages/LandingPage';
 
 export default function App() {
   return (
-    <>
-      <Header />
-      <main className="h-[200vh] bg-mist" /> /*teste de rolling*/
-    </>
-  )
+    <LandingPage />
+  );
 }
