@@ -2,6 +2,7 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import FeatureRow from '../components/FeatureRow';
 import PhoneticCard from '../components/PhoneticCard';
+import StatsStrip from '../components/StatsStrip';
 import Footer from '../components/Footer';
 
 export default function LandingPage() {
@@ -33,23 +34,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Faixa de destaques */}
-        <section className="bg-navy py-12 text-white">
-          <div className="mx-auto flex max-w-360 flex-col justify-around gap-8 px-18 text-center md:flex-row md:text-left">
-            <div>
-              <span className="mb-1 block text-3xl font-bold">4+ jogos</span>
-              <span className="text-sm text-mist">Avaliar e tratar</span>
-            </div>
-            <div>
-              <span className="mb-1 block text-3xl font-bold">100% digital e seguro</span>
-              <span className="text-sm text-mist">Do cadastro ao relatório</span>
-            </div>
-            <div>
-              <span className="mb-1 block text-3xl font-bold">LGPD</span>
-              <span className="text-sm text-mist">Privacidade por princípio</span>
-            </div>
-          </div>
-        </section>
+        <StatsStrip />
 
         {/* Seções de funcionalidades */}
         <section className="mx-auto max-w-360 space-y-32 px-18 py-24">
