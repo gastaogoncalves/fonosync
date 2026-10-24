@@ -31,6 +31,12 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
   }
+  button:not(:disabled),
+  [role="switch"],
+  select,
+  input[type="color"] {
+    cursor: pointer;
+  }
   :focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
