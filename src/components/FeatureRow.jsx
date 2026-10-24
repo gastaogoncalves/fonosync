@@ -1,23 +1,22 @@
-export default function FeatureRow({ title, description, badge, reverse = false }) {
+import { ArrowRight } from 'lucide-react';
+import Button from './Button';
+import ProgressCard from './ProgressCard';
+
+export default function FeatureRow({ icon: Icon, title, description, progress, reverse = false }) {
   return (
-    <div className="grid items-center gap-12 md:grid-cols-2 lg:gap-24">
-      <div className={reverse ? 'md:order-2' : ''}>
-        {badge && <div className="mb-4 text-primary">{badge}</div>}
-        <h3 className="mb-4 text-3xl text-navy">{title}</h3>
-        <p className="mb-6 text-lg leading-relaxed text-muted">{description}</p>
-        <button
-          type="button"
-          className="flex min-h-11 items-center gap-2 rounded-md px-1 text-primary hover:underline"
-        >
-          Saiba mais <span aria-hidden="true">→</span>
-        </button>
+    <div className="grid items-center gap-12 md:grid-cols-2">
+      <div className={`flex flex-col items-start gap-3 ${reverse ? 'md:order-2' : ''}`}>
+        <Icon size={28} className="text-navy" aria-hidden="true" />
+        <h3 className="text-[32px] leading-tight text-navy">{title}</h3>
+        <p className="text-sm leading-relaxed text-muted">{description}</p>
+        <Button variant="tertiary">
+          <ArrowRight size={17} aria-hidden="true" />
+          Saiba mais
+        </Button>
       </div>
 
-      {/* Placeholder para os gráficos de aderência e fluência */}
-      <div className={`rounded-md border border-line bg-white p-6 ${reverse ? 'md:order-1' : ''}`}>
-        <div className="flex aspect-4/3 items-center justify-center rounded-md bg-mist text-primary">
-          Ilustração / Gráfico do Painel
-        </div>
+      <div className={reverse ? 'md:order-1' : ''}>
+        <ProgressCard eyebrow={progress.eyebrow} items={progress.items} note={progress.note} />
       </div>
     </div>
   );
