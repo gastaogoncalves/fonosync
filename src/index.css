@@ -3,8 +3,13 @@
 @theme {
 
   --color-primary: #17689b;  /* botões, links, barras */
-  --color-navy: #103d5a;     /* faixa, footer */
+  --color-on-primary: #ffffff; /* texto sobre a cor primária */
+  --color-navy: #103d5a;     /* títulos */
+  --color-band: #092e45;     /* faixas escuras: destaques, footer, menu lateral */
+  --color-on-band-muted: #c9e5f3; /* texto secundário sobre as faixas escuras */
   --color-mist: #eaf2f8;     /* hero, cards, CTA */
+  --color-surface: #ffffff;  /* fundo da página e dos cards */
+  --color-canvas: #f5f9fc;   /* fundo da área de trabalho logada */
   --color-ink: #172c3a;      /* Texto */
   --color-muted: #5c7180;    /* Texto secundário */
   --color-success: #197451;  /* Sucesso */
@@ -12,13 +17,14 @@
   --color-danger: #a9343b;   /* Erro */
   --color-line: #cad8e1;     /* Divisor: bordas */
   --color-focus: #ffb23f;    /* Contorno de foco (teclado) */
+  --color-accent: #ffb23f;   /* ícones sobre as faixas escuras */
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    background-color: #ffffff;
+    background-color: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-sans);
   }

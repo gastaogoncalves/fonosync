@@ -2,7 +2,7 @@ import logoImg from '../assets/images/logofonoSemNome.png';
 
 export default function Footer() {
   return (
-    <footer className="bg-navy py-12 text-white">
+    <footer className="bg-band py-12 text-white">
       <div className="mx-auto flex max-w-360 flex-col items-start justify-between gap-8 px-18 md:flex-row">
         <div className="max-w-md">
           <div className="mb-4 flex items-center gap-2">
@@ -12,13 +12,13 @@ export default function Footer() {
             </div>
             <span className="font-serif text-xl">FonoSync</span>
           </div>
-          <p className="text-sm leading-relaxed text-mist">
+          <p className="text-sm leading-relaxed text-on-band-muted">
             Plataforma acadêmico-clínica para apoio à terapia fonoaudiológica. Triagem não substitui avaliação profissional.
           </p>
         </div>
 
         {/* Lado direito: links úteis */}
-        <div className="flex flex-col gap-8 text-sm text-mist sm:flex-row">
+        <div className="flex flex-col gap-8 text-sm text-on-band-muted sm:flex-row">
           <div className="flex flex-col gap-3">
             <a href="#pesquisa" className="rounded-md transition-colors hover:text-white">
               Pesquisa e validação
