@@ -1,6 +1,7 @@
 import Header from '../components/Header';
 import Button from '../components/Button';
 import FeatureRow from '../components/FeatureRow';
+import PhoneticCard from '../components/PhoneticCard';
 import Footer from '../components/Footer';
 
 export default function LandingPage() {
@@ -28,11 +29,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="rounded-md border border-line bg-white p-6 md:p-8">
-              <div className="flex h-72 items-center justify-center rounded-md bg-mist text-primary">
-                Gráfico de Análise Fonética Inteligente
-              </div>
-            </div>
+            <PhoneticCard />
           </div>
         </section>
 
