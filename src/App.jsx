@@ -2,6 +2,7 @@ import { A11yProvider } from './context/A11yContext'
 import { useHashRoute } from './hooks/useHashRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPlaceholder from './pages/LoginPlaceholder'
+import ProfessionalDashboard from './pages/ProfessionalDashboard'
 
 function Router() {
   const route = useHashRoute()
@@ -11,6 +12,10 @@ function Router() {
   }
   if (route === '/paciente/entrar') {
     return <LoginPlaceholder title="Entrar na área do paciente" />
+  }
+  if (route.startsWith('/profissional')) {
+    const section = route.split('/')[2] || 'dashboard'
+    return <ProfessionalDashboard section={section} />
   }
   return <LandingPage />
 }
