@@ -1,20 +1,21 @@
-import React from 'react';
-
 export default function FeatureRow({ title, description, badge, reverse = false }) {
   return (
-    <div className={`grid md:grid-cols-2 gap-12 lg:gap-24 items-center ${reverse ? 'md:flex-row-reverse' : ''}`}>
+    <div className="grid items-center gap-12 md:grid-cols-2 lg:gap-24">
       <div className={reverse ? 'md:order-2' : ''}>
-        {badge && <div className="mb-4 text-[#176B9B]">{badge}</div>}
-        <h3 className="text-3xl font-bold mb-4 font-serif text-[#103D5A]">{title}</h3>
-        <p className="text-lg text-gray-600 mb-6 leading-relaxed">{description}</p>
-        <button className="text-[#176B9B] font-medium hover:underline flex items-center gap-2 focus:ring-2 focus:ring-amber-500 rounded px-1">
+        {badge && <div className="mb-4 text-primary">{badge}</div>}
+        <h3 className="mb-4 text-3xl text-navy">{title}</h3>
+        <p className="mb-6 text-lg leading-relaxed text-muted">{description}</p>
+        <button
+          type="button"
+          className="flex min-h-11 items-center gap-2 rounded-md px-1 text-primary hover:underline"
+        >
           Saiba mais <span aria-hidden="true">→</span>
         </button>
       </div>
-      
-      {/* Placeholder para os gráficos de aderência e fluência[cite: 8] */}
-      <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 ${reverse ? 'md:order-1' : ''}`}>
-        <div className="aspect-[4/3] bg-[#EAF2F8] rounded-xl flex items-center justify-center text-[#176B9B]">
+
+      {/* Placeholder para os gráficos de aderência e fluência */}
+      <div className={`rounded-md border border-line bg-white p-6 ${reverse ? 'md:order-1' : ''}`}>
+        <div className="flex aspect-4/3 items-center justify-center rounded-md bg-mist text-primary">
           Ilustração / Gráfico do Painel
         </div>
       </div>

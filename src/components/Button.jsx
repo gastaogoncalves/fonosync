@@ -1,16 +1,18 @@
-import React from 'react';
+// Botões conforme o guia de design (Figma → 01 Foundations → Botões):
+// 44px de altura mínima, 16px nas laterais, cantos de 6px e texto de 14px.
+// O contorno de foco vem da regra global :focus-visible do index.css.
+const variants = {
+  primary: 'border-primary bg-primary text-white active:bg-navy',
+  secondary: 'border-primary bg-white text-navy hover:bg-mist',
+  tertiary: 'border-transparent bg-transparent text-navy hover:bg-mist',
+  danger: 'border-danger bg-danger text-white',
+};
 
-export default function Button({ children, variant = 'primary', className = '', ...props }) {
-  // Cores baseadas no Foundation UI Kit: Azul clínico (#176B9B) e Azul profundo (#103D5A)[cite: 7]
-  const variants = {
-    primary: "bg-[#176B9B] text-white hover:bg-[#103D5A] focus:ring-4 focus:ring-amber-500",
-    secondary: "bg-white text-[#176B9B] border-2 border-[#176B9B] hover:bg-[#EAF2F8] focus:ring-4 focus:ring-amber-500",
-    text: "text-[#176B9B] hover:text-[#103D5A] bg-transparent px-0 focus:ring-4 focus:ring-amber-500",
-  };
-
+export default function Button({ children, variant = 'primary', className = '', type = 'button', ...props }) {
   return (
-    <button 
-      className={`px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-sm md:text-base inline-flex justify-center items-center ${variants[variant]} ${className}`}
+    <button
+      type={type}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-md border px-4 text-sm transition-colors disabled:cursor-not-allowed disabled:border-line disabled:bg-mist disabled:text-navy disabled:opacity-55 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}
