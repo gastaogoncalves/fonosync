@@ -3,8 +3,13 @@
 @theme {
 
   --color-primary: #17689b;  /* botões, links, barras */
-  --color-navy: #103d5a;     /* faixa, footer */
+  --color-on-primary: #ffffff; /* texto sobre a cor primária */
+  --color-navy: #103d5a;     /* títulos */
+  --color-band: #092e45;     /* faixas escuras: destaques, footer, menu lateral */
+  --color-on-band-muted: #c9e5f3; /* texto secundário sobre as faixas escuras */
   --color-mist: #eaf2f8;     /* hero, cards, CTA */
+  --color-surface: #ffffff;  /* fundo da página e dos cards */
+  --color-canvas: #f5f9fc;   /* fundo da área de trabalho logada */
   --color-ink: #172c3a;      /* Texto */
   --color-muted: #5c7180;    /* Texto secundário */
   --color-success: #197451;  /* Sucesso */
@@ -12,18 +17,102 @@
   --color-danger: #a9343b;   /* Erro */
   --color-line: #cad8e1;     /* Divisor: bordas */
   --color-focus: #ffb23f;    /* Contorno de foco (teclado) */
+  --color-accent: #ffb23f;   /* ícones sobre as faixas escuras */
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
+/* painel de acessibilidade */
+
+:root[data-theme="dark"] {
+  --color-primary: #6db3e0;
+  --color-on-primary: #0f1c25;
+  --color-navy: #dbe8f1;
+  --color-band: #0a1620;
+  --color-mist: #16293a;
+  --color-surface: #0f1c25;
+  --color-canvas: #0b1720;
+  --color-ink: #e3edf4;
+  --color-muted: #a3b7c6;
+  --color-success: #5cc495;
+  --color-warning: #e08a43;
+  --color-danger: #f07a80;
+  --color-line: #2c4456;
+}
+
+:root[data-contrast="high"] {
+  --color-primary: #00427a;
+  --color-on-primary: #ffffff;
+  --color-navy: #000000;
+  --color-band: #000000;
+  --color-on-band-muted: #ffffff;
+  --color-mist: #ffffff;
+  --color-surface: #ffffff;
+  --color-canvas: #ffffff;
+  --color-ink: #000000;
+  --color-muted: #000000;
+  --color-success: #00552f;
+  --color-warning: #6b2f00;
+  --color-danger: #8a0010;
+  --color-line: #000000;
+}
+
+:root[data-theme="dark"][data-contrast="high"] {
+  --color-primary: #8fd0ff;
+  --color-on-primary: #000000;
+  --color-navy: #ffffff;
+  --color-mist: #000000;
+  --color-surface: #000000;
+  --color-canvas: #000000;
+  --color-ink: #ffffff;
+  --color-muted: #ffffff;
+  --color-success: #7dffb8;
+  --color-warning: #ffb36b;
+  --color-danger: #ff9aa0;
+  --color-line: #ffffff;
+}
+
+:root[data-leading] body * {
+  line-height: var(--a11y-leading) !important;
+}
+
+:root[data-tracking] body * {
+  letter-spacing: var(--a11y-tracking) !important;
+}
+
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-targets="large"] :is(button, input, select) {
+  min-height: 3.5rem;
+}
+
+:root[data-targets="large"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3.5rem;
+}
+
 @layer base {
   body {
-    background-color: #ffffff;
+    background-color: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-sans);
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
+  }
+  button:not(:disabled),
+  [role="switch"],
+  select,
+  input[type="color"] {
+    cursor: pointer;
   }
   :focus-visible {
     outline: 3px solid var(--color-focus);
