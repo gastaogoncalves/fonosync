@@ -1,39 +1,30 @@
-import { AudioWaveform } from 'lucide-react'
-import A11yActions from './A11yActions'
-
-const links = [
-    { label: 'Plataforma', href: '#plataforma' },
-    { label: 'Soluções', href: '#solucoes' },
-    { label: 'Jogos', href: '#jogos' },
-    { label: 'Para Escolas', href: '#escolas' },
-]
+import React from 'react';
+import logoImg from '../assets/images/logofonoSemNome.png';
 
 export default function Header() {
-    return (
-        <header className="sticky top-0 z-50 bg-surface border-b border-line">
-            <div className="mx-auto flex h-18 max-w-360 items-center justify-between px-18">
-                <a href="#" className="flex items-center gap-2.5">
-                    <span className="flex size-9 items-center justify-center rounded-md bg-primary text-on-primary">
-                        <AudioWaveform size={22} aria-hidden="true" /> {/* logo placeholder */}
-                    </span>
-                    <span className="font-serif text-2xl text-navy">FonoSync</span>
-                </a>
-                <nav aria-label="Principal" className="hidden md:flex items-center">
-                    <ul className="flex gap-6">
-                        {links.map((link) => (
-                            <li key={link.href}>
-                                <a
-                                    href={link.href}
-                                    className="text-ink text-sm font-semibold underline-offset-4 decoration-2 hover:text-primary hover:underline"
-                                >
-                                    {link.label}
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-                <A11yActions />
-            </div>
-        </header>
-    )
+  return (
+    <header className="bg-white border-b border-[var(--color-line)] sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="#/" className="flex items-center gap-3">
+          <img 
+            src={logoImg} 
+            alt="FonoSync Logo" 
+            className="h-12 w-auto rounded-lg object-contain shadow-sm" 
+          />
+          <span className="font-serif font-bold text-xl text-[var(--color-navy)] hidden sm:inline">
+            FonoSync
+          </span>
+        </a>
+
+        <nav className="flex items-center gap-4">
+          <a 
+            href="#/acesso" 
+            className="px-5 py-2.5 bg-[var(--color-primary)] text-white text-sm font-bold rounded-xl hover:opacity-90 transition-opacity shadow-md"
+          >
+            Acessar Plataforma
+          </a>
+        </nav>
+      </div>
+    </header>
+  );
 }
