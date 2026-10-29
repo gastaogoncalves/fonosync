@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Gamepad2, Settings, Calendar, Activity, CheckCircle2, TrendingUp, LogOut, Lock, User, Bell } from 'lucide-react';
 import TriagemGame from '../components/TriagemGame';
-import FonoBot from '../components/FonoBot';
+
 
 export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState('inicio');
