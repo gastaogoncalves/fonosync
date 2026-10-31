@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Gamepad2, Settings, Calendar, Activity, CheckCircle2, TrendingUp, LogOut, Lock, User, Bell } from 'lucide-react';
 import TriagemGame from '../components/TriagemGame';
+import logoImg from '../assets/images/ModeloB_Semnome.jpg';
 
 
 export default function PatientDashboard() {
@@ -12,9 +13,16 @@ export default function PatientDashboard() {
       <aside className="w-full md:w-64 bg-[var(--color-band)] text-white p-6 flex flex-col justify-between shrink-0">
         <div>
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center font-bold text-white text-xl">
-              FS
-            </div>
+             <a href="#/" className="flex min-h-11 items-center gap-2.5">
+                    <span className="flex size-9 items-center justify-center rounded-md text-on-primary">
+                     <img 
+                        src={logoImg} 
+                        alt="FonoSync Logo" 
+                        className="h-20 w-auto rounded-lg object-contain shadow-sm s" 
+                      />
+                    </span>
+                  </a>
+            
             <div>
               <h2 className="font-serif font-bold text-lg">FonoSync</h2>
               <p className="text-[10px] uppercase text-[var(--color-on-band-muted)] tracking-wider">Área do Paciente</p>
@@ -153,7 +161,6 @@ export default function PatientDashboard() {
         )}
       </main>
 
-      <FonoBot />
     </div>
   );
 }

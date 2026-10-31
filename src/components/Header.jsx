@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImg from '../assets/images/logofonoSemNome.png';
+import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 
 export default function Header() {
   return (

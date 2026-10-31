@@ -7,7 +7,7 @@ import Schedule from './professional/Schedule';
 import Tracking from './professional/Tracking';
 import Reports from './professional/Reports';
 import SettingsPage from './professional/SettingsPage';
- import logoImg from '../assets/images/logofonoSemNome.png';
+ import logoImg from '../assets/images/ModeloB_Semnome.jpg';
 
 const sections = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, component: Dashboard },
@@ -22,7 +22,7 @@ function Sidebar({ current }) {
   return (
     <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col gap-5 bg-band px-4 py-5 text-white">
       <a href="#/" className="flex min-h-11 items-center gap-2.5">
-        <span className="flex size-9 items-center justify-center rounded-md bg-primary text-on-primary">
+        <span className="flex size-9 items-center justify-center rounded-md text-on-primary">
          <img 
             src={logoImg} 
             alt="FonoSync Logo" 
@@ -57,10 +57,6 @@ function Sidebar({ current }) {
       </nav>
 
       <div className="mt-auto flex flex-col gap-1">
-        <button type="button" className="flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-semibold hover:bg-white/8">
-          <Bot size={18} aria-hidden="true" />
-          FonoBot · ajuda
-        </button>
         <p className="px-1 text-sm text-on-band-muted">Dra. Renata Lima</p>
         <a href="#/" className="flex min-h-11 items-center gap-2 rounded-md px-1 text-sm hover:bg-white/8">
           <LogOut size={16} aria-hidden="true" />
