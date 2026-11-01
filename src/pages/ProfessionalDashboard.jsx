@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Activity, AudioWaveform, Bot, CalendarDays, FileText, LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
+import { Activity, CalendarDays, FileText, LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
 import A11yActions from '../components/A11yActions';
 import Dashboard from './professional/Dashboard';
 import Patients from './professional/Patients';

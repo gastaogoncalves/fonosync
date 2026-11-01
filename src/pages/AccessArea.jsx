@@ -1,4 +1,3 @@
-import React from 'react';
 import { UserCheck, HeartPulse, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function AccessArea() {

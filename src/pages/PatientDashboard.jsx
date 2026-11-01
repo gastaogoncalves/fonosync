@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Home, Gamepad2, Settings, Calendar, Activity, CheckCircle2, TrendingUp, LogOut, Lock, User, Bell } from 'lucide-react';
+import { useState } from 'react';
+import { Home, Gamepad2, Settings, Activity, CheckCircle2, LogOut } from 'lucide-react';
 import TriagemGame from '../components/TriagemGame';
 import logoImg from '../assets/images/ModeloB_Semnome.jpg';
 

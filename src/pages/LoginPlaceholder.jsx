@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function LoginPlaceholder({ title = "Entrar na área do sistema", nextHref = "#/profissional" }) {
   const [isRegister, setIsRegister] = useState(false);

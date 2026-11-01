@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Gamepad2, CheckCircle2, AlertTriangle, XCircle, ArrowRight, RotateCcw, Volume2, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { Gamepad2, AlertTriangle } from 'lucide-react';
 
 export default function TriagemGame() {
   const [activeTab, setActiveTab] = useState('form02');
@@ -12,12 +12,12 @@ export default function TriagemGame() {
   const [currentAnimal, setCurrentAnimal] = useState(0);
   const [childWord, setChildWord] = useState('');
   const [showAnalysis24, setShowAnalysis24] = useState(false);
-  const [score24, setScore24] = useState({ trocas: 0, acertos: 0 });
+  const [, setScore24] = useState({ trocas: 0, acertos: 0 });
 
   // Estado do Jogo Rima 4-5 anos
   const [rimaIndex, setRimaIndex] = useState(0);
   const [rimaFeedback, setRimaFeedback] = useState(null);
-  const [rimaScore, setRimaScore] = useState({ acertos: 0, erros: 0 });
+  const [, setRimaScore] = useState({ acertos: 0, erros: 0 });
 
   // Estado Checklist 6+ anos
   const [checkedItems, setCheckedItems] = useState({});
