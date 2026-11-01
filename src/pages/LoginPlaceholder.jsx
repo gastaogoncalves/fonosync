@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import A11yActions from '../components/A11yActions';
 
 export default function LoginPlaceholder({ title = "Entrar na área do sistema", nextHref = "#/profissional" }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -20,8 +21,11 @@ export default function LoginPlaceholder({ title = "Entrar na área do sistema",
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-band)] flex items-center justify-center p-6 text-[var(--color-ink)]">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-[var(--color-line)]">
+    <div className="relative min-h-screen bg-[var(--color-band)] flex items-center justify-center p-6 text-[var(--color-ink)]">
+      <div className="absolute top-6 right-6">
+        <A11yActions onDark />
+      </div>
+      <div className="bg-surface rounded-2xl shadow-2xl p-8 max-w-md w-full border border-[var(--color-line)]">
         <h2 className="text-2xl font-bold font-serif text-center text-[var(--color-navy)] mb-2">{title}</h2>
         <p className="text-xs text-center text-[var(--color-muted)] mb-6">
           {isRegister ? 'Preencha os dados para criar sua nova conta no FonoSync' : 'Acesse com suas credenciais de demonstração'}
@@ -57,7 +61,7 @@ export default function LoginPlaceholder({ title = "Entrar na área do sistema",
             </div>
           )}
 
-          <button type="submit" className="w-full py-3 bg-[var(--color-primary)] text-white font-bold rounded-xl text-sm hover:opacity-90">
+          <button type="submit" className="w-full py-3 bg-primary-fill text-white font-bold rounded-xl text-sm hover:opacity-90">
             {isRegister ? 'Criar Minha Conta' : 'Entrar no Sistema'}
           </button>
         </form>

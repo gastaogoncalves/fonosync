@@ -80,7 +80,7 @@ export default function TriagemGame() {
   return (
     <div className="bg-[var(--color-surface)] border border-[var(--color-line)] rounded-2xl overflow-hidden shadow-lg">
       {/* HEADER DE ABAS DE JOGOS */}
-      <div className="bg-gradient-to-r from-[var(--color-navy)] to-[var(--color-primary)] p-4 text-white flex flex-wrap gap-2 items-center justify-between">
+      <div className="bg-gradient-to-r from-navy-fill to-primary-fill p-4 text-white flex flex-wrap gap-2 items-center justify-between">
         <div className="flex items-center gap-2 font-bold font-serif text-lg">
           <Gamepad2 className="w-6 h-6 text-[var(--color-accent)]" /> Jogos de Triagem Precoce
         </div>
@@ -113,13 +113,13 @@ export default function TriagemGame() {
                   <span className="text-xs font-bold uppercase text-[var(--color-primary)]">{q.category}</span>
                   <p className="font-semibold text-sm mt-1 mb-3">{q.id}. {q.title}</p>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => handleAnswer02(q.id, 'sim')} className={`px-4 py-2 rounded-lg text-xs font-bold border ${answers02[q.id] === 'sim' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-[var(--color-ink)] border-[var(--color-line)]'}`}>
+                    <button onClick={() => handleAnswer02(q.id, 'sim')} className={`px-4 py-2 rounded-lg text-xs font-bold border ${answers02[q.id] === 'sim' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-surface text-[var(--color-ink)] border-[var(--color-line)]'}`}>
                       ✅ Sim
                     </button>
-                    <button onClick={() => handleAnswer02(q.id, 'parcial')} className={`px-4 py-2 rounded-lg text-xs font-bold border ${answers02[q.id] === 'parcial' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-[var(--color-ink)] border-[var(--color-line)]'}`}>
+                    <button onClick={() => handleAnswer02(q.id, 'parcial')} className={`px-4 py-2 rounded-lg text-xs font-bold border ${answers02[q.id] === 'parcial' ? 'bg-amber-500 text-white border-amber-500' : 'bg-surface text-[var(--color-ink)] border-[var(--color-line)]'}`}>
                       ⚠️ Às vezes
                     </button>
-                    <button onClick={() => handleAnswer02(q.id, 'nao')} className={`px-4 py-2 rounded-lg text-xs font-bold border ${answers02[q.id] === 'nao' ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-[var(--color-ink)] border-[var(--color-line)]'}`}>
+                    <button onClick={() => handleAnswer02(q.id, 'nao')} className={`px-4 py-2 rounded-lg text-xs font-bold border ${answers02[q.id] === 'nao' ? 'bg-rose-600 text-white border-rose-600' : 'bg-surface text-[var(--color-ink)] border-[var(--color-line)]'}`}>
                       ❌ Ainda não
                     </button>
                   </div>
@@ -127,7 +127,7 @@ export default function TriagemGame() {
               ))}
             </div>
 
-            <button onClick={() => setShowResult02(true)} className="mt-6 w-full py-3 bg-[var(--color-primary)] text-white font-bold rounded-xl hover:opacity-90 transition-opacity">
+            <button onClick={() => setShowResult02(true)} className="mt-6 w-full py-3 bg-primary-fill text-white font-bold rounded-xl hover:opacity-90 transition-opacity">
               Calcular Indicador de Risco Fonológico
             </button>
 
@@ -176,7 +176,7 @@ export default function TriagemGame() {
                   setScore24(prev => ({ ...prev, trocas: prev.trocas + 1 }));
                 }
               }}
-              className="w-full py-3 bg-[var(--color-primary)] text-white font-bold rounded-xl mb-4"
+              className="w-full py-3 bg-primary-fill text-white font-bold rounded-xl mb-4"
             >
               Analisar Pronúncia
             </button>
@@ -260,7 +260,7 @@ export default function TriagemGame() {
               ))}
             </div>
 
-            <button onClick={() => setShowCheckResult(true)} className="w-full py-3 bg-[var(--color-primary)] text-white font-bold rounded-xl">
+            <button onClick={() => setShowCheckResult(true)} className="w-full py-3 bg-primary-fill text-white font-bold rounded-xl">
               Gerar Relatório de Triagem Escolar
             </button>
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Home, Gamepad2, Settings, Activity, CheckCircle2, LogOut } from 'lucide-react';
 import TriagemGame from '../components/TriagemGame';
+import A11yActions from '../components/A11yActions';
 import logoImg from '../assets/images/ModeloB_Semnome.jpg';
 
 
@@ -32,19 +33,19 @@ export default function PatientDashboard() {
           <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('inicio')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'inicio' ? 'bg-[var(--color-primary)] text-white' : 'text-white/70 hover:bg-white/10'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'inicio' ? 'bg-primary-fill text-white' : 'text-white/70 hover:bg-white/10'}`}
             >
               <Home className="w-4 h-4" /> Página Inicial
             </button>
             <button
               onClick={() => setActiveTab('jogos')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'jogos' ? 'bg-[var(--color-primary)] text-white' : 'text-white/70 hover:bg-white/10'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'jogos' ? 'bg-primary-fill text-white' : 'text-white/70 hover:bg-white/10'}`}
             >
               <Gamepad2 className="w-4 h-4" /> Jogos de Triagem
             </button>
             <button
               onClick={() => setActiveTab('config')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'config' ? 'bg-[var(--color-primary)] text-white' : 'text-white/70 hover:bg-white/10'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'config' ? 'bg-primary-fill text-white' : 'text-white/70 hover:bg-white/10'}`}
             >
               <Settings className="w-4 h-4" /> Configurações
             </button>
@@ -69,33 +70,36 @@ export default function PatientDashboard() {
 
       {/* ÁREA DE CONTEÚDO PRINCIPAL */}
       <main className="flex-1 p-6 md:p-10 max-w-6xl mx-auto w-full">
+        <div className="mb-6 flex justify-end">
+          <A11yActions />
+        </div>
         {/* PÁGINA INICIAL */}
         {activeTab === 'inicio' && (
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-[var(--color-navy)] to-[var(--color-primary)] rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="bg-gradient-to-r from-navy-fill to-primary-fill rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
               <h1 className="text-3xl font-bold font-serif mb-2">Bem-vinda de volta, Maria Luiza! 👋</h1>
               <p className="text-sm text-white/80">Sua próxima sessão de acompanhamento está agendada para <strong>Quarta-feira às 10:30</strong>.</p>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-white p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
+              <div className="bg-surface p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
                 <span className="text-xs font-bold uppercase text-[var(--color-muted)]">Sessões Realizadas</span>
                 <p className="text-3xl font-bold font-serif text-[var(--color-navy)] mt-2">24</p>
                 <span className="text-xs text-emerald-600 font-semibold">100% de presença</span>
               </div>
-              <div className="bg-white p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
+              <div className="bg-surface p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
                 <span className="text-xs font-bold uppercase text-[var(--color-muted)]">Índice de Fluência</span>
                 <p className="text-3xl font-bold font-serif text-emerald-600 mt-2">72%</p>
                 <span className="text-xs text-emerald-600 font-semibold">↑ +28% desde o início</span>
               </div>
-              <div className="bg-white p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
+              <div className="bg-surface p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
                 <span className="text-xs font-bold uppercase text-[var(--color-muted)]">Exercícios Concluídos</span>
                 <p className="text-3xl font-bold font-serif text-[var(--color-primary)] mt-2">2 / 4</p>
                 <span className="text-xs text-[var(--color-muted)]">Atividades de hoje</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-[var(--color-line)] p-6 shadow-sm">
+            <div className="bg-surface rounded-2xl border border-[var(--color-line)] p-6 shadow-sm">
               <h3 className="font-serif font-bold text-lg text-[var(--color-navy)] mb-4">Exercícios Prescritos para Hoje</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50 border border-emerald-200">
@@ -117,7 +121,7 @@ export default function PatientDashboard() {
                       <p className="text-xs text-[var(--color-muted)]">Leia em voz alta por 5 minutos com pausas de velocidade</p>
                     </div>
                   </div>
-                  <button className="text-xs font-bold px-3 py-1 bg-[var(--color-primary)] text-white rounded-full">Praticar</button>
+                  <button className="text-xs font-bold px-3 py-1 bg-primary-fill text-white rounded-full">Praticar</button>
                 </div>
               </div>
             </div>
@@ -137,7 +141,7 @@ export default function PatientDashboard() {
 
         {/* PÁGINA DE CONFIGURAÇÕES */}
         {activeTab === 'config' && (
-          <div className="bg-white rounded-2xl border border-[var(--color-line)] p-8 shadow-sm space-y-6">
+          <div className="bg-surface rounded-2xl border border-[var(--color-line)] p-8 shadow-sm space-y-6">
             <h1 className="text-2xl font-bold font-serif text-[var(--color-navy)]">Configurações do Perfil</h1>
 
             <div className="space-y-4">
@@ -153,7 +157,7 @@ export default function PatientDashboard() {
                 <label className="block text-xs font-bold uppercase text-[var(--color-muted)] mb-1">Alterar Senha</label>
                 <input type="password" placeholder="••••••••" className="w-full p-3 border border-[var(--color-line)] rounded-xl text-sm" />
               </div>
-              <button className="px-6 py-3 bg-[var(--color-primary)] text-white font-bold text-sm rounded-xl hover:opacity-90">
+              <button className="px-6 py-3 bg-primary-fill text-white font-bold text-sm rounded-xl hover:opacity-90">
                 Salvar Alterações
               </button>
             </div>

@@ -1,8 +1,13 @@
 import { UserCheck, HeartPulse, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import A11yActions from '../components/A11yActions';
 
 export default function AccessArea() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[var(--color-band)] via-[var(--color-navy)] to-[var(--color-primary)] flex flex-col justify-center items-center p-6 text-white relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--color-band)] via-navy-fill to-primary-fill flex flex-col justify-center items-center p-6 text-white relative overflow-hidden">
+      <div className="absolute top-6 right-6 z-20">
+        <A11yActions onDark />
+      </div>
+
       {/* Elementos decorativos no fundo */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[var(--color-accent)]/10 rounded-full blur-3xl pointer-events-none" />
@@ -26,7 +31,7 @@ export default function AccessArea() {
           className="group relative bg-white/10 backdrop-blur-lg border border-white/20 hover:border-white/50 rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:bg-white/15 flex flex-col justify-between"
         >
           <div>
-            <div className="w-16 h-16 rounded-xl bg-[var(--color-primary)] flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform">
+            <div className="w-16 h-16 rounded-xl bg-primary-fill flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform">
               <UserCheck className="w-8 h-8" />
             </div>
             <span className="text-xs font-bold text-[var(--color-accent)] uppercase tracking-wider">Para Fonoaudiólogos</span>
