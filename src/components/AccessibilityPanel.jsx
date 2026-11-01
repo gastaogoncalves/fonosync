@@ -12,6 +12,13 @@ const toggles = [
   { key: 'largeTargets', label: 'Aumentar elementos interativos' },
 ];
 
+const colorVisionOptions = [
+  { value: 'normal', label: 'Padrão' },
+  { value: 'red-green', label: 'Protanopia ou deuteranopia (vermelho e verde)' },
+  { value: 'tritan', label: 'Tritanopia (azul e amarelo)' },
+  { value: 'mono', label: 'Monocromático (sem cores)' },
+];
+
 const leadingOptions = [
   { value: 'normal', label: 'Normal' },
   { value: '1.5', label: '1,5×' },
@@ -26,21 +33,81 @@ const trackingOptions = [
 
 const fieldClass = 'min-h-11 w-full rounded-md border border-muted/60 bg-surface px-3 text-sm text-ink';
 
-function ColorField({ id, label, value, fallback, onChange }) {
+// no claro, cores escuras; no escuro, cores claras
+const textColors = {
+  light: [
+    { value: '#000000', label: 'Preto' },
+    { value: '#172c3a', label: 'Grafite' },
+    { value: '#0b2e4f', label: 'Azul-escuro' },
+    { value: '#4a2c12', label: 'Marrom' },
+    { value: '#5a1023', label: 'Vinho' },
+  ],
+  dark: [
+    { value: '#ffffff', label: 'Branco' },
+    { value: '#d7dde3', label: 'Cinza-claro' },
+    { value: '#f5ecd7', label: 'Creme' },
+    { value: '#fff3b0', label: 'Amarelo-claro' },
+    { value: '#cfe6f7', label: 'Azul-claro' },
+  ],
+};
+
+const buttonColors = {
+  light: [
+    { value: '#1f6f43', label: 'Verde' },
+    { value: '#5b3fa0', label: 'Roxo' },
+    { value: '#8a1c3c', label: 'Vinho' },
+    { value: '#a3470d', label: 'Laranja' },
+    { value: '#000000', label: 'Preto' },
+  ],
+  dark: [
+    { value: '#7fd1a6', label: 'Verde-claro' },
+    { value: '#b9a5ec', label: 'Lilás' },
+    { value: '#f2a2bb', label: 'Rosa' },
+    { value: '#f5b47a', label: 'Pêssego' },
+    { value: '#ffffff', label: 'Branco' },
+  ],
+};
+
+function SwatchField({ name, label, value, options, onChange }) {
+  const selected = options.find((option) => option.value === value)?.label ?? 'Padrão';
+  const optionClass =
+    'flex min-h-11 cursor-pointer items-center justify-center rounded-md has-checked:ring-2 has-checked:ring-primary has-[input:focus-visible]:outline-3 has-[input:focus-visible]:outline-focus';
+
   return (
-    <div className="flex flex-1 flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-bold text-ink">{label}</label>
-      <div className={`flex items-center gap-2 ${fieldClass}`}>
-        <input
-          id={id}
-          type="color"
-          value={value || fallback}
-          onChange={(event) => onChange(event.target.value)}
-          className="size-7 shrink-0 cursor-pointer rounded-sm border border-line bg-transparent"
-        />
-        <span className={value ? 'uppercase' : 'text-muted'}>{value || 'Padrão'}</span>
+    <fieldset className="flex flex-col gap-1.5">
+      <legend className="mb-1.5 text-sm font-bold text-ink">
+        {label} <span className="font-normal text-muted">· {selected}</span>
+      </legend>
+      <div className="flex gap-1">
+        <label className={`${optionClass} px-3 text-sm text-ink`}>
+          <input
+            type="radio"
+            name={name}
+            className="sr-only"
+            checked={!value}
+            onChange={() => onChange('')}
+          />
+          Padrão
+        </label>
+        {options.map((option) => (
+          <label key={option.value} className={`${optionClass} size-11`} title={option.label}>
+            <input
+              type="radio"
+              name={name}
+              className="sr-only"
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+            />
+            <span className="sr-only">{option.label}</span>
+            <span
+              className="size-8 rounded-full border border-muted/60"
+              style={{ backgroundColor: option.value }}
+              aria-hidden="true"
+            />
+          </label>
+        ))}
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -60,6 +127,9 @@ function SelectField({ id, label, value, options, onChange }) {
 export default function AccessibilityPanel({ id, onClose }) {
   const a11y = useA11y();
   const { settings } = a11y;
+  const theme = settings.darkMode ? 'dark' : 'light';
+  const textKey = settings.darkMode ? 'textDark' : 'textLight';
+  const buttonKey = settings.darkMode ? 'buttonDark' : 'buttonLight';
   const titleRef = useRef(null);
   const [saveResult, setSaveResult] = useState(null);
 
@@ -118,22 +188,30 @@ export default function AccessibilityPanel({ id, onClose }) {
         />
       ))}
 
-      <div className="flex gap-2.5">
-        <ColorField
-          id={`${id}-fundo`}
-          label="Cor de fundo"
-          value={settings.bgColor}
-          fallback="#ffffff"
-          onChange={(color) => change(() => a11y.update('bgColor', color))}
-        />
-        <ColorField
-          id={`${id}-texto`}
-          label="Cor do texto"
-          value={settings.textColor}
-          fallback="#172c3a"
-          onChange={(color) => change(() => a11y.update('textColor', color))}
+      <div className="flex">
+        <SelectField
+          id={`${id}-daltonismo`}
+          label="Modo de cor (daltonismo)"
+          value={settings.colorVision}
+          options={colorVisionOptions}
+          onChange={(value) => change(() => a11y.update('colorVision', value))}
         />
       </div>
+
+      <SwatchField
+        name={`${id}-texto`}
+        label="Cor do texto"
+        value={settings[textKey]}
+        options={textColors[theme]}
+        onChange={(color) => change(() => a11y.update(textKey, color))}
+      />
+      <SwatchField
+        name={`${id}-botoes`}
+        label="Cor dos botões"
+        value={settings[buttonKey]}
+        options={buttonColors[theme]}
+        onChange={(color) => change(() => a11y.update(buttonKey, color))}
+      />
 
       <div className="flex gap-2.5">
         <SelectField

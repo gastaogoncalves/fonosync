@@ -12,8 +12,12 @@ function defaultSettings() {
     darkMode: false,
     reduceMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     largeTargets: false,
-    bgColor: '',
-    textColor: '',
+    colorVision: 'normal',
+    // cores escolhidas no painel, guardadas separadas para o tema claro e o escuro
+    textLight: '',
+    textDark: '',
+    buttonLight: '',
+    buttonDark: '',
     leading: 'normal',
     tracking: 'normal',
   };
@@ -55,18 +59,22 @@ export function A11yProvider({ children }) {
     setFlag(root, 'data-contrast', settings.highContrast && 'high');
     setFlag(root, 'data-motion', settings.reduceMotion && 'reduce');
     setFlag(root, 'data-targets', settings.largeTargets && 'large');
+    setFlag(root, 'data-color-vision', settings.colorVision !== 'normal' && settings.colorVision);
 
     setFlag(root, 'data-leading', settings.leading !== 'normal' && settings.leading);
     setVariable(root, '--a11y-leading', settings.leading !== 'normal' && settings.leading);
     setFlag(root, 'data-tracking', settings.tracking !== 'normal' && settings.tracking);
     setVariable(root, '--a11y-tracking', settings.tracking !== 'normal' && settings.tracking);
 
-    setVariable(root, '--color-surface', settings.bgColor);
-    setVariable(root, '--color-mist', settings.bgColor);
-    setVariable(root, '--color-canvas', settings.bgColor);
-    setVariable(root, '--color-ink', settings.textColor);
-    setVariable(root, '--color-navy', settings.textColor);
-    setVariable(root, '--color-muted', settings.textColor);
+    const text = settings.darkMode ? settings.textDark : settings.textLight;
+    const button = settings.darkMode ? settings.buttonDark : settings.buttonLight;
+    setVariable(root, '--color-ink', text);
+    setVariable(root, '--color-navy', text);
+    setVariable(root, '--color-muted', text);
+    setVariable(root, '--color-primary', button);
+    setVariable(root, '--color-on-primary', button && (settings.darkMode ? '#0f1c25' : '#ffffff'));
+    // fundos com texto branco precisam de um tom escuro, mesmo no modo escuro
+    setVariable(root, '--color-primary-fill', button && (settings.darkMode ? `color-mix(in oklab, ${button} 45%, black)` : button));
   }, [settings]);
 
   function update(key, value) {

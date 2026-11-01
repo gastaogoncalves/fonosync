@@ -6,6 +6,8 @@
   --color-on-primary: #ffffff; /* texto sobre a cor primária */
   --color-navy: #103d5a;     /* títulos */
   --color-band: #092e45;     /* faixas escuras: destaques, footer, menu lateral */
+  --color-primary-fill: #17689b; /* fundos com texto branco */
+  --color-navy-fill: #103d5a;    /* fundos com texto branco */
   --color-on-band-muted: #c9e5f3; /* texto secundário sobre as faixas escuras */
   --color-mist: #eaf2f8;     /* hero, cards, CTA */
   --color-surface: #ffffff;  /* fundo da página e dos cards */
@@ -26,6 +28,8 @@
 
 :root[data-theme="dark"] {
   --color-primary: #6db3e0;
+  --color-primary-fill: #1f5f8b;
+  --color-navy-fill: #13324a;
   --color-on-primary: #0f1c25;
   --color-navy: #dbe8f1;
   --color-band: #0a1620;
@@ -42,6 +46,8 @@
 
 :root[data-contrast="high"] {
   --color-primary: #00427a;
+  --color-primary-fill: #00427a;
+  --color-navy-fill: #000000;
   --color-on-primary: #ffffff;
   --color-navy: #000000;
   --color-band: #000000;
@@ -59,6 +65,7 @@
 
 :root[data-theme="dark"][data-contrast="high"] {
   --color-primary: #8fd0ff;
+  --color-primary-fill: #003a6b;
   --color-on-primary: #000000;
   --color-navy: #ffffff;
   --color-mist: #000000;
@@ -70,6 +77,77 @@
   --color-warning: #ffb36b;
   --color-danger: #ff9aa0;
   --color-line: #ffffff;
+}
+
+/* modos de cor para daltonismo */
+
+/* protanopia e deuteranopia: troca verde e vermelho por azul e laranja */
+:root[data-color-vision="red-green"] {
+  --color-success: #0062a8;
+  --color-warning: #806300;
+  --color-danger: #c0400a;
+}
+
+:root[data-theme="dark"][data-color-vision="red-green"] {
+  --color-success: #5eaeea;
+  --color-warning: #d9b23e;
+  --color-danger: #f08a4b;
+}
+
+/* tritanopia: troca amarelo por magenta e deixa o foco rosa */
+:root[data-color-vision="tritan"] {
+  --color-warning: #a8326e;
+  --color-danger: #b3261e;
+  --color-focus: #ff4f9a;
+  --color-accent: #ff7ab6;
+}
+
+:root[data-theme="dark"][data-color-vision="tritan"] {
+  --color-warning: #ef86b9;
+  --color-danger: #f07a80;
+}
+
+:root[data-color-vision="mono"] {
+  filter: grayscale(1);
+}
+
+/* fora do modo padrão, as cores do Tailwind usadas nas telas
+   seguem o tema (verde = sucesso, vermelho = erro, amarelo = atenção, azul = primária) */
+:root:is([data-theme], [data-contrast], [data-color-vision]) {
+  --color-emerald-50: color-mix(in oklab, var(--color-success) 12%, var(--color-surface));
+  --color-emerald-100: color-mix(in oklab, var(--color-success) 18%, var(--color-surface));
+  --color-emerald-200: color-mix(in oklab, var(--color-success) 35%, var(--color-surface));
+  --color-emerald-300: color-mix(in oklab, var(--color-success) 50%, white);
+  --color-emerald-600: var(--color-success);
+  --color-emerald-700: color-mix(in oklab, var(--color-success) 80%, var(--color-ink));
+  --color-emerald-800: color-mix(in oklab, var(--color-success) 60%, var(--color-ink));
+  --color-emerald-900: color-mix(in oklab, var(--color-success) 45%, var(--color-ink));
+
+  --color-rose-50: color-mix(in oklab, var(--color-danger) 12%, var(--color-surface));
+  --color-rose-100: color-mix(in oklab, var(--color-danger) 18%, var(--color-surface));
+  --color-rose-200: color-mix(in oklab, var(--color-danger) 35%, var(--color-surface));
+  --color-rose-600: var(--color-danger);
+  --color-rose-700: color-mix(in oklab, var(--color-danger) 80%, var(--color-ink));
+  --color-rose-800: color-mix(in oklab, var(--color-danger) 60%, var(--color-ink));
+
+  --color-amber-50: color-mix(in oklab, var(--color-warning) 12%, var(--color-surface));
+  --color-amber-200: color-mix(in oklab, var(--color-warning) 35%, var(--color-surface));
+  --color-amber-500: var(--color-warning);
+  --color-amber-600: var(--color-warning);
+  --color-amber-800: color-mix(in oklab, var(--color-warning) 60%, var(--color-ink));
+  --color-amber-900: color-mix(in oklab, var(--color-warning) 45%, var(--color-ink));
+
+  --color-blue-50: color-mix(in oklab, var(--color-primary) 12%, var(--color-surface));
+  --color-blue-200: color-mix(in oklab, var(--color-primary) 35%, var(--color-surface));
+  --color-blue-800: color-mix(in oklab, var(--color-primary) 60%, var(--color-ink));
+  --color-blue-900: color-mix(in oklab, var(--color-primary) 45%, var(--color-ink));
+}
+
+/* no escuro, os fundos coloridos com texto branco escurecem um pouco */
+:root[data-theme="dark"] {
+  --color-emerald-600: color-mix(in oklab, var(--color-success) 75%, black);
+  --color-rose-600: color-mix(in oklab, var(--color-danger) 75%, black);
+  --color-amber-500: color-mix(in oklab, var(--color-warning) 75%, black);
 }
 
 :root[data-leading] body * {
@@ -117,5 +195,10 @@
   :focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
+  }
+  /* palavra que o "Ouvir página" está lendo */
+  ::highlight(fonosync-leitura) {
+    background-color: #ffe45c;
+    color: #172c3a;
   }
 }
