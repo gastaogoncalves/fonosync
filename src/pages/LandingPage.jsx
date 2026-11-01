@@ -122,14 +122,6 @@ export default function LandingPage() {
                 <Button variant="primary">Experimentar Avaliação</Button>
                 <Button variant="secondary">Conhecer Plataforma</Button>
               </div>
-              <div className="mt-4 flex gap-6 text-sm font-bold">
-                <a href="#/paciente/entrar" className="text-primary underline-offset-4 decoration-2 hover:underline">
-                  Sou Paciente
-                </a>
-                <a href="#/profissional/entrar" className="text-primary underline-offset-4 decoration-2 hover:underline">
-                  Sou Fonoaudiólogo
-                </a>
-              </div>
             </div>
 
             <PhoneticCard />
