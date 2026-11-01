@@ -2,6 +2,7 @@ const variants = {
   primary: 'border-primary bg-primary text-on-primary hover:brightness-[0.82] active:brightness-75',
   secondary: 'border-primary bg-surface text-navy hover:bg-primary hover:text-on-primary',
   tertiary: 'border-transparent bg-transparent text-navy hover:bg-primary/15 hover:text-primary',
+  tertiaryOnDark: 'border-transparent bg-transparent text-white hover:bg-white/15',
   danger: 'border-danger bg-danger text-on-primary hover:brightness-[0.82]',
 };
 
