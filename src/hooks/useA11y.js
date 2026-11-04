@@ -1,7 +1,3 @@
-import { createContext, useContext } from 'react';
+// src/hooks/useA11y.jsx
 
-export const A11yContext = createContext(null);
-
-export function useA11y() {
-  return useContext(A11yContext);
-}
+export { useA11y } from '../context/A11yContext';

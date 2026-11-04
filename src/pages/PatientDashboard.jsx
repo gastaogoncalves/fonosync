@@ -1,166 +1,277 @@
 import { useState } from 'react';
-import { Home, Gamepad2, Settings, Activity, CheckCircle2, LogOut } from 'lucide-react';
-import TriagemGame from '../components/TriagemGame';
-import logoImg from '../assets/images/ModeloB_Semnome.jpg';
+import {
+  Accessibility,
+  Award,
+  Calendar,
+  CheckCircle2,
+  Gamepad2,
+  Home,
+  LogOut,
+  Mail,
+  Phone,
+  Save,
+  Settings,
+  Sparkles,
+  User,
+} from 'lucide-react';
+import logoImg from '../assets/images/ModeloA_Semnome.jpg';
+import A11yModal from '../components/A11yModal';
+import Button from '../components/Button';
+import { buttonClass } from '../components/buttonStyles';
 
+const navItems = [
+  { id: 'inicio', label: 'Início', icon: Home },
+  { id: 'jogos', label: 'Meus Jogos', icon: Gamepad2 },
+  { id: 'consultas', label: 'Consultas', icon: Calendar },
+  { id: 'conquistas', label: 'Conquistas', icon: Award },
+  { id: 'configuracoes', label: 'Configurações', icon: Settings },
+];
+
+const pageInfo = {
+  inicio: { title: 'Olá, Maria Luiza! 👋', subtitle: 'Pronta para treinar suas missões de hoje?' },
+  jogos: { title: 'Jogos Terapêuticos Prescritos 🎮', subtitle: 'Exercícios divertidos recomendados pela Dra. Renata.' },
+  consultas: { title: 'Minhas Consultas e Agendamentos 📅', subtitle: 'Histórico e próximos horários confirmados.' },
+  conquistas: { title: 'Suas Conquistas e Prêmios 🏆', subtitle: 'Acompanhe seus selos por praticar os exercícios.' },
+  configuracoes: { title: 'Configurações do Perfil ⚙️', subtitle: 'Atualize seus dados pessoais e preferências.' },
+};
+
+const cardClass = 'rounded-xl border border-line bg-surface shadow-sm';
+
+function Field({ id, label, icon: Icon, ...props }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-xs font-bold uppercase text-navy">
+        {label}
+      </label>
+      <div className="flex items-center gap-2 rounded-md border border-line bg-surface p-3 text-sm focus-within:outline-3 focus-within:outline-focus">
+        {Icon && <Icon size={16} className="shrink-0 text-muted" aria-hidden="true" />}
+        <input id={id} className="w-full bg-transparent font-semibold text-ink outline-none" {...props} />
+      </div>
+    </div>
+  );
+}
 
 export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState('inicio');
+  const [showA11y, setShowA11y] = useState(false);
+
+  const [patientData, setPatientData] = useState({
+    name: 'Maria Luiza Ferreira',
+    age: '8 anos',
+    responsible: 'Clara Ferreira (Mãe)',
+    phone: '(11) 98765-4321',
+    email: 'clara.ferreira@email.com',
+  });
+  const [savedNotice, setSavedNotice] = useState(false);
+
+  const handleSaveSettings = (e) => {
+    e.preventDefault();
+    setSavedNotice(true);
+    setTimeout(() => setSavedNotice(false), 3000);
+  };
+
+  const handleLogout = () => {
+    window.location.hash = '#/';
+  };
+
+  const info = pageInfo[activeTab];
+  const bind = (field) => ({
+    value: patientData[field],
+    onChange: (e) => setPatientData({ ...patientData, [field]: e.target.value }),
+  });
 
   return (
-    <div className="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink)] flex flex-col md:flex-row">
-      {/* SIDEBAR DO PACIENTE */}
-      <aside className="w-full md:w-64 bg-[var(--color-band)] text-white p-6 flex flex-col justify-between shrink-0">
+    <div className="flex min-h-screen bg-canvas font-sans">
+      <aside className="flex w-64 shrink-0 flex-col justify-between bg-band p-5 text-white">
         <div>
-          <div className="flex items-center gap-3 mb-8">
-             <a href="#/" className="flex min-h-11 items-center gap-2.5">
-                    <span className="flex size-9 items-center justify-center rounded-md text-on-primary">
-                     <img 
-                        src={logoImg} 
-                        alt="FonoSync Logo" 
-                        className="h-20 w-auto rounded-lg object-contain shadow-sm s" 
-                      />
-                    </span>
-                  </a>
-            
-            <div>
-              <h2 className="font-serif font-bold text-lg">FonoSync</h2>
-              <p className="text-[10px] uppercase text-[var(--color-on-band-muted)] tracking-wider">Área do Paciente</p>
-            </div>
+          <div className="mb-8 flex items-center gap-3">
+            <img src={logoImg} alt="FonoSync Logo" className="h-9 w-auto rounded bg-white object-contain p-0.5" />
+            <span className="font-serif text-xl font-bold text-white">FonoSync</span>
           </div>
 
-          <nav className="space-y-1">
-            <button
-              onClick={() => setActiveTab('inicio')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'inicio' ? 'bg-[var(--color-primary)] text-white' : 'text-white/70 hover:bg-white/10'}`}
-            >
-              <Home className="w-4 h-4" /> Página Inicial
-            </button>
-            <button
-              onClick={() => setActiveTab('jogos')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'jogos' ? 'bg-[var(--color-primary)] text-white' : 'text-white/70 hover:bg-white/10'}`}
-            >
-              <Gamepad2 className="w-4 h-4" /> Jogos de Triagem
-            </button>
-            <button
-              onClick={() => setActiveTab('config')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'config' ? 'bg-[var(--color-primary)] text-white' : 'text-white/70 hover:bg-white/10'}`}
-            >
-              <Settings className="w-4 h-4" /> Configurações
-            </button>
+          <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-wider text-on-band-muted">Área do paciente</p>
+
+          <nav aria-label="Áreas do paciente" className="flex flex-col gap-1">
+            {navItems.map(({ id, label, icon: Icon }) => {
+              const isActive = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveTab(id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-r-md border-l-4 px-3 text-left text-sm font-bold transition-colors ${
+                    isActive
+                      ? 'border-accent bg-white/10 text-white'
+                      : 'border-transparent text-on-band-muted hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Icon size={18} className="shrink-0 text-accent" aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xs">
+        <div className="space-y-3 border-t border-white/15 pt-6">
+          <button
+            type="button"
+            onClick={() => setShowA11y(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-md border border-white/30 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
+          >
+            <Accessibility size={16} aria-hidden="true" /> Acessibilidade
+          </button>
+
+          <div className="flex items-center gap-3 rounded-md border border-white/15 bg-white/10 p-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-primary font-serif text-sm font-bold text-on-primary">
               ML
             </div>
-            <div>
-              <p className="text-xs font-bold">Maria Luiza</p>
-              <p className="text-[10px] text-white/60">Paciente</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-bold text-white">{patientData.name}</p>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-on-band-muted">
+                <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" /> Ativo
+              </span>
             </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label="Sair para a página inicial"
+              title="Sair para a página inicial"
+              className="rounded p-1 text-on-band-muted hover:text-white"
+            >
+              <LogOut size={16} aria-hidden="true" />
+            </button>
           </div>
-          <a href="#/acesso" className="text-white/60 hover:text-white" title="Sair">
-            <LogOut className="w-4 h-4" />
-          </a>
         </div>
       </aside>
 
-      {/* ÁREA DE CONTEÚDO PRINCIPAL */}
-      <main className="flex-1 p-6 md:p-10 max-w-6xl mx-auto w-full">
-        {/* PÁGINA INICIAL */}
+      <main className="flex-1 space-y-6 overflow-y-auto p-8">
+        <header className="flex items-center justify-between border-b border-line pb-4">
+          <div>
+            <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
+            <p className="text-sm text-muted">{info.subtitle}</p>
+          </div>
+          <div className="flex items-center gap-2 rounded-md border border-warning bg-warning/10 px-4 py-2">
+            <Sparkles className="text-warning" size={18} aria-hidden="true" />
+            <span className="text-xs font-bold text-navy">120 Pontos acumulados</span>
+          </div>
+        </header>
+
         {activeTab === 'inicio' && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-[var(--color-navy)] to-[var(--color-primary)] rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
-              <h1 className="text-3xl font-bold font-serif mb-2">Bem-vinda de volta, Maria Luiza! 👋</h1>
-              <p className="text-sm text-white/80">Sua próxima sessão de acompanhamento está agendada para <strong>Quarta-feira às 10:30</strong>.</p>
-            </div>
-
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-white p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
-                <span className="text-xs font-bold uppercase text-[var(--color-muted)]">Sessões Realizadas</span>
-                <p className="text-3xl font-bold font-serif text-[var(--color-navy)] mt-2">24</p>
-                <span className="text-xs text-emerald-600 font-semibold">100% de presença</span>
-              </div>
-              <div className="bg-white p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
-                <span className="text-xs font-bold uppercase text-[var(--color-muted)]">Índice de Fluência</span>
-                <p className="text-3xl font-bold font-serif text-emerald-600 mt-2">72%</p>
-                <span className="text-xs text-emerald-600 font-semibold">↑ +28% desde o início</span>
-              </div>
-              <div className="bg-white p-6 rounded-2xl border border-[var(--color-line)] shadow-sm">
-                <span className="text-xs font-bold uppercase text-[var(--color-muted)]">Exercícios Concluídos</span>
-                <p className="text-3xl font-bold font-serif text-[var(--color-primary)] mt-2">2 / 4</p>
-                <span className="text-xs text-[var(--color-muted)]">Atividades de hoje</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-[var(--color-line)] p-6 shadow-sm">
-              <h3 className="font-serif font-bold text-lg text-[var(--color-navy)] mb-4">Exercícios Prescritos para Hoje</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                    <div>
-                      <p className="text-sm font-bold text-emerald-900">Respiração costodiafragmática</p>
-                      <p className="text-xs text-emerald-700">Inspire 3s · Segure 2s · Expire 5s — 5 séries</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold px-3 py-1 bg-emerald-200 text-emerald-800 rounded-full">Concluído</span>
+          <section className="grid gap-6 md:grid-cols-2">
+            <div className={`${cardClass} space-y-4 p-6`}>
+              <h2 className="font-serif text-lg font-bold text-navy">Sua Próxima Consulta</h2>
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-mist p-4">
+                <div>
+                  <p className="text-sm font-bold text-ink">Segunda-feira, 09:00</p>
+                  <p className="text-xs text-muted">Com Dra. Renata Lima</p>
                 </div>
+                <span className="rounded-full border border-primary bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                  Presencial
+                </span>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-line)]">
-                  <div className="flex items-center gap-3">
-                    <Activity className="w-5 h-5 text-[var(--color-primary)]" />
-                    <div>
-                      <p className="text-sm font-bold">Leitura oral progressiva</p>
-                      <p className="text-xs text-[var(--color-muted)]">Leia em voz alta por 5 minutos com pausas de velocidade</p>
-                    </div>
-                  </div>
-                  <button className="text-xs font-bold px-3 py-1 bg-[var(--color-primary)] text-white rounded-full">Praticar</button>
+            <div className={`${cardClass} space-y-4 p-6`}>
+              <h2 className="font-serif text-lg font-bold text-navy">Treino da Semana</h2>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold">
+                  <span className="text-ink">Jogo da Rima (Nível 2)</span>
+                  <span className="flex items-center gap-1 text-success">
+                    <CheckCircle2 size={14} aria-hidden="true" /> Concluído
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-line" aria-hidden="true">
+                  <div className="h-full bg-success" style={{ width: '100%' }} />
                 </div>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* PÁGINA DE JOGOS DE TRIAGEM */}
         {activeTab === 'jogos' && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold font-serif text-[var(--color-navy)]">Jogos de Triagem Fonológica</h1>
-              <p className="text-sm text-[var(--color-muted)]">Pratique sua dicção, articulação e rima com os jogos terapêuticos integrados.</p>
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={`${cardClass} space-y-3 p-5`}>
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-xl" aria-hidden="true">🎯</div>
+              <h3 className="font-bold text-navy">Caça-Sons: Fonema /r/</h3>
+              <p className="text-xs text-muted">Identifique palavras com o som vibrante.</p>
+              <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
             </div>
-            <TriagemGame />
-          </div>
+
+            <div className={`${cardClass} space-y-3 p-5`}>
+              <div className="flex size-12 items-center justify-center rounded-xl bg-warning/10 text-xl" aria-hidden="true">🧩</div>
+              <h3 className="font-bold text-navy">Jogo da Rima</h3>
+              <p className="text-xs text-muted">Combine pares de palavras com terminação igual.</p>
+              <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
+            </div>
+          </section>
         )}
 
-        {/* PÁGINA DE CONFIGURAÇÕES */}
-        {activeTab === 'config' && (
-          <div className="bg-white rounded-2xl border border-[var(--color-line)] p-8 shadow-sm space-y-6">
-            <h1 className="text-2xl font-bold font-serif text-[var(--color-navy)]">Configurações do Perfil</h1>
-
-            <div className="space-y-4">
+        {activeTab === 'consultas' && (
+          <section className={`${cardClass} space-y-4 p-6`}>
+            <h2 className="font-serif text-lg font-bold text-navy">Histórico de Atendimentos</h2>
+            <div className="flex items-center justify-between gap-3 rounded-xl bg-mist p-4 text-sm">
               <div>
-                <label className="block text-xs font-bold uppercase text-[var(--color-muted)] mb-1">Nome Completo</label>
-                <input type="text" defaultValue="Maria Luiza Ferreira" className="w-full p-3 border border-[var(--color-line)] rounded-xl text-sm" />
+                <p className="font-bold text-navy">Sessão de Avaliação Fonética</p>
+                <p className="text-xs text-muted">04 de Novembro de 2026 - Dra. Renata Lima</p>
               </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-[var(--color-muted)] mb-1">E-mail de Contato</label>
-                <input type="email" defaultValue="maria@fonosync.com.br" className="w-full p-3 border border-[var(--color-line)] rounded-xl text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-[var(--color-muted)] mb-1">Alterar Senha</label>
-                <input type="password" placeholder="••••••••" className="w-full p-3 border border-[var(--color-line)] rounded-xl text-sm" />
-              </div>
-              <button className="px-6 py-3 bg-[var(--color-primary)] text-white font-bold text-sm rounded-xl hover:opacity-90">
-                Salvar Alterações
-              </button>
+              <span className="rounded-full border border-success bg-success/10 px-3 py-1 text-xs font-bold text-success">
+                Realizada
+              </span>
             </div>
-          </div>
+          </section>
+        )}
+
+        {activeTab === 'conquistas' && (
+          <section className="grid gap-4 sm:grid-cols-3">
+            <div className={`${cardClass} space-y-2 p-5 text-center`}>
+              <span className="text-4xl" aria-hidden="true">🌟</span>
+              <h3 className="text-sm font-bold text-navy">Primeira Triagem</h3>
+              <p className="text-xs text-muted">Concluiu o primeiro teste de fala.</p>
+            </div>
+            <div className={`${cardClass} space-y-2 p-5 text-center`}>
+              <span className="text-4xl" aria-hidden="true">🔥</span>
+              <h3 className="text-sm font-bold text-navy">7 Dias Seguidos</h3>
+              <p className="text-xs text-muted">Treinou a articulação a semana toda!</p>
+            </div>
+          </section>
+        )}
+
+        {activeTab === 'configuracoes' && (
+          <section className={`${cardClass} max-w-2xl p-6`}>
+            <form onSubmit={handleSaveSettings} className="space-y-4">
+              <Field id="pac-nome" label="Nome do Paciente" icon={User} type="text" {...bind('name')} />
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field id="pac-idade" label="Idade" type="text" {...bind('age')} />
+                <Field id="pac-responsavel" label="Responsável Legal" type="text" {...bind('responsible')} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field id="pac-telefone" label="Telefone / WhatsApp" icon={Phone} type="text" {...bind('phone')} />
+                <Field id="pac-email" label="E-mail de Contato" icon={Mail} type="email" {...bind('email')} />
+              </div>
+
+              <div className="flex items-center justify-between border-t border-line pt-4">
+                <span role="status" className="flex items-center gap-1 text-xs font-bold text-success">
+                  {savedNotice && (
+                    <>
+                      <CheckCircle2 size={16} aria-hidden="true" /> Dados atualizados com sucesso!
+                    </>
+                  )}
+                </span>
+
+                <Button variant="primary" type="submit">
+                  <Save size={16} aria-hidden="true" /> Salvar alterações
+                </Button>
+              </div>
+            </form>
+          </section>
         )}
       </main>
 
+      <A11yModal isOpen={showA11y} onClose={() => setShowA11y(false)} />
     </div>
   );
 }

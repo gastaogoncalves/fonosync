@@ -72,6 +72,24 @@
   --color-line: #ffffff;
 }
 
+/*
+  Cor de fundo e cor do texto escolhidas no painel.
+  O A11yContext só liga estes atributos quando a pessoa clica em
+  "Salvar preferências". Ficam desativados no modo escuro e no alto
+  contraste, que têm paleta própria.
+*/
+:root[data-a11y-bg]:not([data-theme="dark"]):not([data-contrast="high"]) {
+  --color-surface: var(--a11y-bg);
+  --color-canvas: var(--a11y-bg);
+  --color-mist: color-mix(in srgb, var(--a11y-bg) 91%, black);
+}
+
+:root[data-a11y-text]:not([data-theme="dark"]):not([data-contrast="high"]) {
+  --color-ink: var(--a11y-text);
+  --color-navy: var(--a11y-text);
+  --color-muted: color-mix(in srgb, var(--a11y-text) 85%, var(--color-surface));
+}
+
 :root[data-leading] body * {
   line-height: var(--a11y-leading) !important;
 }
@@ -117,5 +135,33 @@
   :focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
+  }
+}
+/* Modo escuro: controles nativos (select, barra de rolagem, calendário) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Alto contraste: links sublinhados, campos com borda visível e foco mais forte */
+:root[data-contrast="high"] a:not([class*="bg-"]) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:root[data-contrast="high"] :is(input, select, textarea) {
+  border-color: currentColor;
+}
+
+:root[data-contrast="high"] :focus-visible {
+  outline-width: 4px;
+}
+
+/* Respeita "reduzir movimento" do sistema operacional */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

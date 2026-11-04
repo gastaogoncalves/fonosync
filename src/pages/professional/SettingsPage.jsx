@@ -2,81 +2,96 @@ import { useState } from 'react';
 import Button from '../../components/Button';
 import Notice from '../../components/Notice';
 import Panel from '../../components/Panel';
-import Switch from '../../components/Switch';
 
-const settingsSections = ['Perfil', 'Sistema', 'Privacidade / LGPD', 'Backup', 'Segurança / 2FA'];
+const settingsSections = ['Perfil', 'Sistema'];
 
-const privacyOptions = [
-  { key: 'consent', label: 'Solicitar consentimento antes de compartilhar' },
-  { key: 'anonymize', label: 'Anonimizar dados em pesquisa' },
-  { key: 'accessLog', label: 'Registrar log de acesso' },
-];
-
-const retentionOptions = [
-  '20 anos após o último registro',
-  '10 anos após o último registro',
-  '5 anos após o último registro',
-];
-
-function PrivacySettings() {
-  const [options, setOptions] = useState({ consent: true, anonymize: true, accessLog: true });
-  const [retention, setRetention] = useState(retentionOptions[0]);
+function ProfileSettings() {
+  const [profile, setProfile] = useState({
+    name: 'Dra. Renata Lima',
+    crfa: 'CRFa 2-19876',
+    email: 'renata.lima@fonosync.com.br',
+    phone: '(11) 98765-4321',
+  });
   const [saved, setSaved] = useState(false);
 
-  function change(key, value) {
-    setOptions((current) => ({ ...current, [key]: value }));
-    setSaved(false);
+  function handleSubmit(e) {
+    e.preventDefault();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   }
 
   return (
-    <Panel title="Privacidade e LGPD" className="flex-1">
-      {privacyOptions.map((option) => (
-        <Switch
-          key={option.key}
-          id={`privacidade-${option.key}`}
-          label={option.label}
-          checked={options[option.key]}
-          onChange={(checked) => change(option.key, checked)}
-        />
-      ))}
+    <Panel title="Perfil do Profissional" className="flex-1">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-bold text-ink mb-1">Nome Completo</label>
+          <input
+            type="text"
+            value={profile.name}
+            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+            className="w-full p-3 border border-muted/60 rounded-md text-sm text-ink bg-surface"
+          />
+        </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="retencao-prontuarios" className="text-sm font-bold text-ink">
-          Retenção de prontuários
-        </label>
-        <select
-          id="retencao-prontuarios"
-          value={retention}
-          onChange={(event) => {
-            setRetention(event.target.value);
-            setSaved(false);
-          }}
-          className="min-h-11 w-full rounded-md border border-muted/60 bg-surface px-3 text-sm text-ink"
-        >
-          {retentionOptions.map((option) => (
-            <option key={option}>{option}</option>
-          ))}
-        </select>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-bold text-ink mb-1">Registro Profissional (CRFa)</label>
+            <input
+              type="text"
+              value={profile.crfa}
+              onChange={(e) => setProfile({ ...profile, crfa: e.target.value })}
+              className="w-full p-3 border border-muted/60 rounded-md text-sm text-ink bg-surface"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-ink mb-1">Telefone Comercial</label>
+            <input
+              type="text"
+              value={profile.phone}
+              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+              className="w-full p-3 border border-muted/60 rounded-md text-sm text-ink bg-surface"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-ink mb-1">E-mail Profissional</label>
+          <input
+            type="email"
+            value={profile.email}
+            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+            className="w-full p-3 border border-muted/60 rounded-md text-sm text-ink bg-surface"
+          />
+        </div>
+
+        <div className="pt-2">
+          <Button variant="primary" type="submit">
+            Salvar Perfil
+          </Button>
+        </div>
+
+        {saved && <Notice tone="success" title="Perfil atualizado com sucesso!" />}
+      </form>
+    </Panel>
+  );
+}
+
+function SystemSettings() {
+  return (
+    <Panel title="Configurações do Sistema" className="flex-1">
+      <div className="space-y-4 text-sm text-ink">
+        <p>Configurações de exibição de prontuário, preferências de notificação por e-mail e layout do painel.</p>
+        <div className="p-4 bg-mist rounded-xl border border-line">
+          <p className="font-bold text-navy">Versão do Sistema: FonoSync 2.4.0</p>
+          <p className="text-xs text-muted">Última atualização: Outubro de 2026</p>
+        </div>
       </div>
-
-      <Notice tone="success" title="Dados protegidos">
-        Último backup criptografado: hoje, 02:00. 2FA ativo para esta conta.
-      </Notice>
-
-      <div className="flex flex-col items-start gap-3.5">
-        <Button variant="primary" onClick={() => setSaved(true)}>
-          Salvar configurações
-        </Button>
-        <Button variant="secondary">Exportar dados da conta</Button>
-      </div>
-
-      <div role="status">{saved && <Notice tone="success" title="Configurações salvas" />}</div>
     </Panel>
   );
 }
 
 export default function SettingsPage() {
-  const [current, setCurrent] = useState('Privacidade / LGPD');
+  const [current, setCurrent] = useState('Perfil');
 
   return (
     <div className="flex items-start gap-4.5">
@@ -99,11 +114,8 @@ export default function SettingsPage() {
         </ul>
       </nav>
 
-      {current === 'Privacidade / LGPD' ? (
-        <PrivacySettings />
-      ) : (
-        <Panel title={current} className="flex-1" />
-      )}
+      {current === 'Perfil' && <ProfileSettings />}
+      {current === 'Sistema' && <SystemSettings />}
     </div>
   );
 }
