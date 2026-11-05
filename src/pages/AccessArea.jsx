@@ -117,14 +117,14 @@ export default function AccessArea() {
 
   return (
     <div className="flex min-h-screen flex-col justify-between bg-canvas font-sans">
-      <header className="sticky top-0 z-40 border-b border-line bg-surface/95 px-6 py-4 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-line bg-surface/95 px-4 py-4 backdrop-blur-md sm:px-6">
         <div className="mx-auto flex max-w-360 items-center justify-between">
           <a href="#/" className="flex items-center gap-3">
             <img src={logoImg} alt="FonoSync Logo" className="h-9 w-auto rounded bg-white object-contain" />
             <span className="font-serif text-xl font-bold text-navy">FonoSync</span>
           </a>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => setShowA11y(true)}

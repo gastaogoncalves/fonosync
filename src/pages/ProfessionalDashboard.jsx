@@ -155,8 +155,8 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
   const info = pageInfo[activeSection] ?? pageInfo.dashboard;
 
   return (
-    <div className="flex min-h-screen bg-canvas font-sans">
-      <aside className="flex w-64 shrink-0 flex-col justify-between bg-band p-5 text-white">
+    <div className="flex min-h-screen flex-col bg-canvas font-sans md:flex-row">
+      <aside className="flex w-full shrink-0 flex-col justify-between bg-band p-5 text-white md:w-64">
         <div>
           <div className="mb-8 flex items-center gap-3">
             <img src={logoImg} alt="FonoSync Logo" className="h-9 w-auto rounded bg-white object-contain p-0.5" />
@@ -229,8 +229,8 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
         </div>
       </aside>
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-8">
-        <header className="flex items-center justify-between border-b border-line pb-4">
+      <main className="min-w-0 flex-1 space-y-6 overflow-y-auto p-4 md:p-8">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
           <div>
             <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
             <p className="text-sm text-muted">{info.subtitle}</p>

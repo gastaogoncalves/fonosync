@@ -115,7 +115,7 @@ export default function LandingPage() {
 
       <main>
         <section id="plataforma" className="scroll-mt-24 bg-mist">
-          <div className="mx-auto grid max-w-360 items-center gap-12 px-6 md:px-18 py-18 lg:grid-cols-2">
+          <div className="mx-auto grid max-w-360 grid-cols-1 items-center gap-12 px-6 md:px-18 py-18 lg:grid-cols-2">
             <div>
               <span className="mb-4 block text-sm font-bold tracking-wider text-primary uppercase">
                 FONOAUDIOLOGIA CONECTADA E ACESSÍVEL
