@@ -6,7 +6,6 @@ import AccessArea from './pages/AccessArea';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
 import PatientDashboard from './pages/PatientDashboard';
 import TriagemGame from './components/TriagemGame';
-import AudioPlayerBar from './components/AudioPlayerBar';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -69,7 +68,6 @@ export default function App() {
     <ErrorBoundary>
       <A11yProvider>
         <Router />
-        <AudioPlayerBar />
       </A11yProvider>
     </ErrorBoundary>
   );

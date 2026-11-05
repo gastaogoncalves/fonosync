@@ -14,7 +14,7 @@ const links = [
 
 export default function Header() {
   const [showA11y, setShowA11y] = useState(false);
-  const { speakPageContent, isPlayerOpen } = useA11y();
+  const { speakPageContent, isPlaying } = useA11y();
 
   return (
     <>
@@ -49,9 +49,9 @@ export default function Header() {
             <span className="hidden md:inline-flex">
               <button
                 type="button"
-                aria-pressed={isPlayerOpen}
+                aria-pressed={isPlaying}
                 onClick={() => speakPageContent()}
-                className={buttonClass(isPlayerOpen ? 'primary' : 'tertiary')}
+                className={buttonClass(isPlaying ? 'primary' : 'tertiary')}
               >
                 <Volume2 size={16} aria-hidden="true" />
                 Ouvir página

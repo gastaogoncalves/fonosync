@@ -11,28 +11,60 @@ export const DEFAULT_SETTINGS = Object.freeze({
   darkMode: false,
   reduceMotion: false,
   largeTargets: false,
-  bgColor: 'default',
+  colorMode: 'default',
   textColor: 'default',
+  buttonColor: 'default',
   leading: 'normal',
   tracking: 'normal',
-  colorVision: 'normal',
 });
 
 export const DEFAULT_VOICE = Object.freeze({ gender: 'female', rate: 1 });
 
-export const BACKGROUND_OPTIONS = [
-  { id: 'default', label: 'Padrão', hex: null, preview: '#ffffff' },
-  { id: 'bege', label: 'Bege', hex: '#f6ecd8', preview: '#f6ecd8' },
-  { id: 'azul', label: 'Azul claro', hex: '#d8ebf7', preview: '#d8ebf7' },
-  { id: 'verde', label: 'Verde claro', hex: '#dcefe2', preview: '#dcefe2' },
+export const COLOR_MODE_OPTIONS = [
+  { value: 'default', label: 'Padrão' },
+  { value: 'red-green', label: 'Protanopia ou deuteranopia (vermelho e verde)' },
+  { value: 'tritan', label: 'Tritanopia (azul e amarelo)' },
+  { value: 'mono', label: 'Monocromático (sem cores)' },
 ];
 
-// vermelho escuro para manter o contraste AA
-export const TEXT_OPTIONS = [
-  { id: 'default', label: 'Padrão', hex: null, preview: '#172c3a' },
-  { id: 'preto', label: 'Preto', hex: '#000000', preview: '#000000' },
-  { id: 'vermelho', label: 'Vermelho', hex: '#b3001b', preview: '#b3001b' },
-];
+// no claro, cores escuras; no escuro, cores claras
+export const TEXT_OPTIONS = {
+  light: [
+    { id: 'default', label: 'Padrão', hex: null },
+    { id: 'preto', label: 'Preto', hex: '#000000' },
+    { id: 'grafite', label: 'Grafite', hex: '#172c3a' },
+    { id: 'azul-escuro', label: 'Azul-escuro', hex: '#0b2e4f' },
+    { id: 'marrom', label: 'Marrom', hex: '#4a2c12' },
+    { id: 'vinho', label: 'Vinho', hex: '#5a1023' },
+  ],
+  dark: [
+    { id: 'default', label: 'Padrão', hex: null },
+    { id: 'branco', label: 'Branco', hex: '#ffffff' },
+    { id: 'cinza-claro', label: 'Cinza-claro', hex: '#d7dde3' },
+    { id: 'creme', label: 'Creme', hex: '#f5ecd7' },
+    { id: 'amarelo-claro', label: 'Amarelo-claro', hex: '#fff3b0' },
+    { id: 'azul-claro', label: 'Azul-claro', hex: '#cfe6f7' },
+  ],
+};
+
+export const BUTTON_OPTIONS = {
+  light: [
+    { id: 'default', label: 'Padrão', hex: null },
+    { id: 'verde', label: 'Verde', hex: '#1f6f43' },
+    { id: 'roxo', label: 'Roxo', hex: '#5b3fa0' },
+    { id: 'vinho', label: 'Vinho', hex: '#8a1c3c' },
+    { id: 'laranja', label: 'Laranja', hex: '#a3470d' },
+    { id: 'preto', label: 'Preto', hex: '#000000' },
+  ],
+  dark: [
+    { id: 'default', label: 'Padrão', hex: null },
+    { id: 'verde-claro', label: 'Verde-claro', hex: '#7fd1a6' },
+    { id: 'lilas', label: 'Lilás', hex: '#b9a5ec' },
+    { id: 'rosa', label: 'Rosa', hex: '#f2a2bb' },
+    { id: 'pessego', label: 'Pêssego', hex: '#f5b47a' },
+    { id: 'branco', label: 'Branco', hex: '#ffffff' },
+  ],
+};
 
 export const LEADING_OPTIONS = [
   { value: 'normal', label: 'Normal' },
@@ -46,25 +78,14 @@ export const TRACKING_OPTIONS = [
   { value: '0.12em', label: 'Máximo' },
 ];
 
-export const COLOR_VISION_OPTIONS = [
-  { value: 'normal', label: 'Padrão' },
-  { value: 'red-green', label: 'Protanopia ou deuteranopia (vermelho e verde)' },
-  { value: 'tritan', label: 'Tritanopia (azul e amarelo)' },
-  { value: 'mono', label: 'Monocromático (sem cores)' },
-];
-
 export const VOICE_OPTIONS = [
   { value: 'female', label: 'Feminina' },
   { value: 'male', label: 'Masculina' },
 ];
 
-export const SPEECH_RATES = [
-  { value: 0.75, label: '0,75× (lento)' },
-  { value: 1, label: '1× (normal)' },
-  { value: 1.25, label: '1,25× (rápido)' },
-  { value: 1.5, label: '1,5× (muito rápido)' },
-  { value: 2, label: '2× (máximo)' },
-];
+export const SPEECH_RATE_MIN = 0.5;
+export const SPEECH_RATE_MAX = 2.5;
+export const SPEECH_RATE_STEP = 0.25;
 
 export const FEATURE_DETAILS = {
   desafio: [

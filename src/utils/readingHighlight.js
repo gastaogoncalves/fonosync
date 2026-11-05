@@ -22,7 +22,7 @@ export function collectPageText(root) {
     acceptNode(node) {
       const parent = node.parentElement;
       if (!node.textContent.trim() || !parent) return NodeFilter.FILTER_REJECT;
-      if (parent.closest('[aria-hidden="true"], script, style, [role="dialog"]')) return NodeFilter.FILTER_REJECT;
+      if (parent.closest('[aria-hidden="true"], [data-a11y-skip], script, style, [role="dialog"]')) return NodeFilter.FILTER_REJECT;
       if (parent.checkVisibility && !parent.checkVisibility()) return NodeFilter.FILTER_REJECT;
       return NodeFilter.FILTER_ACCEPT;
     },
