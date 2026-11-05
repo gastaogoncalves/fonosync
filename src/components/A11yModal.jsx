@@ -55,7 +55,6 @@ function Preview({ kind, color }) {
   return <span aria-hidden="true" className="size-5 shrink-0 rounded-full border border-muted" style={{ backgroundColor: color }} />;
 }
 
-// Grupo de opções de cor: radios nativos (setas do teclado funcionam e leitores de tela anunciam o grupo)
 function SwatchGroup({ legend, name, options, value, onChange, kind, locked }) {
   return (
     <fieldset disabled={locked} className={`min-w-0 ${locked ? 'opacity-55' : ''}`}>
@@ -110,7 +109,7 @@ export default function A11yModal({ isOpen, onClose }) {
   const dialogRef = useRef(null);
   const titleRef = useRef(null);
 
-  // Ao abrir: foco no título. Ao fechar: descarta o que não foi salvo e devolve o foco ao botão que abriu.
+  // ao fechar, descarta o que não foi salvo
   useEffect(() => {
     if (!isOpen) return undefined;
 

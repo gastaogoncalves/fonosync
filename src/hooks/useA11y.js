@@ -1,4 +1,3 @@
-// src/hooks/useA11y.jsx
 
 import { createContext, useContext } from 'react';
 import { DEFAULT_SETTINGS, DEFAULT_VOICE } from '../utils/constants';

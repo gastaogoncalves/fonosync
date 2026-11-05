@@ -1,4 +1,3 @@
-// Rola até um elemento respeitando "Reduzir animações" (painel) e a preferência do sistema
 export function scrollToId(id) {
   const target = document.getElementById(id);
   if (!target) return;

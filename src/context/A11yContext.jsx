@@ -17,11 +17,8 @@ import {
   VOICE_OPTIONS,
 } from '../utils/constants';
 
-const CHARS_PER_SECOND = 14; // estimativa de leitura em pt-BR a 1× (só para o relógio do player)
+const CHARS_PER_SECOND = 14; // média de leitura em pt-BR na velocidade normal
 const EMPTY_TIMELINE = { prefix: [0], lengths: [], total: 0 };
-
-
-/* ---------- preferências salvas ---------- */
 
 function loadPreferences() {
   const fallback = { settings: DEFAULT_SETTINGS, voice: DEFAULT_VOICE };
@@ -57,8 +54,6 @@ function loadPreferences() {
     return fallback;
   }
 }
-
-/* ---------- aplicação no documento ---------- */
 
 function setAttr(root, name, value) {
   if (value) root.setAttribute(name, value);
@@ -97,11 +92,9 @@ function applyToDocument(settings) {
   setVar(root, '--a11y-text', textHex);
 }
 
-/* ---------- leitor de voz ---------- */
-
 const supportsSpeech = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-// Quebra o texto em frases curtas: o progresso fica mais preciso e as vozes online não travam em textos longos
+// frases curtas, porque algumas vozes travam em textos longos
 function splitIntoChunks(text) {
   const prepared = text
     .split(/\n+/)
@@ -132,8 +125,6 @@ function pickVoice(voices, gender) {
       : /female|luciana|maria|helena|google português|mulher|feminin/i;
   return portuguese.find((voice) => matcher.test(voice.name)) || portuguese[gender === 'male' ? 1 : 0] || portuguese[0] || voices[0] || null;
 }
-
-/* ---------- provider ---------- */
 
 export function A11yProvider({ children }) {
   const [initial] = useState(loadPreferences);
@@ -206,7 +197,7 @@ export function A11yProvider({ children }) {
     setSaveStatus('reset');
   };
 
-  /* vozes + parar a leitura ao trocar de página */
+  // vozes e parar a leitura ao trocar de página
   useEffect(() => {
     if (!supportsSpeech()) return undefined;
     const synth = window.speechSynthesis;
@@ -372,7 +363,6 @@ export function A11yProvider({ children }) {
     if (playerStatus === 'playing') speakChunk(indexRef.current, { rate });
   };
 
-  /* relógio do player */
   const effectiveSpeed = CHARS_PER_SECOND * speechRate;
   const charsBefore = timeline.prefix[position.index] ?? 0;
   const withinChunk = Math.min(timeline.lengths[position.index] ?? 0, position.elapsed * effectiveSpeed);

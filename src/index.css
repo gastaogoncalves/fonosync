@@ -72,12 +72,7 @@
   --color-line: #ffffff;
 }
 
-/*
-  Cor de fundo e cor do texto escolhidas no painel.
-  O A11yContext só liga estes atributos quando a pessoa clica em
-  "Salvar preferências". Ficam desativados no modo escuro e no alto
-  contraste, que têm paleta própria.
-*/
+/* cores escolhidas no painel, fora do modo escuro e do alto contraste */
 :root[data-a11y-bg]:not([data-theme="dark"]):not([data-contrast="high"]) {
   --color-surface: var(--a11y-bg);
   --color-canvas: var(--a11y-bg);

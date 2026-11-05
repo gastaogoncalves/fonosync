@@ -127,7 +127,6 @@ export default function LandingPage() {
                 Conectamos pacientes, profissionais e avaliações inteligentes para tornar cada jornada terapêutica mais contínua, segura e humana.
               </p>
               
-              {/* Botões CTA principais sem os links inferiores */}
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button variant="primary" onClick={handleGoToTriagem}>
                   Experimentar Avaliação

@@ -11,8 +11,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   darkMode: false,
   reduceMotion: false,
   largeTargets: false,
-  bgColor: 'default', // id de BACKGROUND_OPTIONS
-  textColor: 'default', // id de TEXT_OPTIONS
+  bgColor: 'default',
+  textColor: 'default',
   leading: 'normal',
   tracking: 'normal',
   colorVision: 'normal',
@@ -20,8 +20,6 @@ export const DEFAULT_SETTINGS = Object.freeze({
 
 export const DEFAULT_VOICE = Object.freeze({ gender: 'female', rate: 1 });
 
-// Cores de fundo. Para trocar um tom, altere só o `hex` (e o `preview`).
-// "Padrão" não tem hex: mantém as cores originais do design.
 export const BACKGROUND_OPTIONS = [
   { id: 'default', label: 'Padrão', hex: null, preview: '#ffffff' },
   { id: 'bege', label: 'Bege', hex: '#f6ecd8', preview: '#f6ecd8' },
@@ -29,8 +27,7 @@ export const BACKGROUND_OPTIONS = [
   { id: 'verde', label: 'Verde claro', hex: '#dcefe2', preview: '#dcefe2' },
 ];
 
-// Cores de texto. O vermelho é um tom escuro para manter contraste AA
-// (mais de 4,5:1) sobre branco, bege, azul claro e verde claro.
+// vermelho escuro para manter o contraste AA
 export const TEXT_OPTIONS = [
   { id: 'default', label: 'Padrão', hex: null, preview: '#172c3a' },
   { id: 'preto', label: 'Preto', hex: '#000000', preview: '#000000' },

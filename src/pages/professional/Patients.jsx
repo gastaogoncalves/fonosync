@@ -5,22 +5,18 @@ export default function Patients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('todos'); // 'todos', 'acompanhamento', 'atencao', 'arquivados'
   
-  // Estados para modais interativos
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [successNotice, setSuccessNotice] = useState(false);
 
-  // Filtros avançados
   const [filterAgeGroup, setFilterAgeGroup] = useState('todos');
 
-  // Formulário de novo paciente
   const [newPatientName, setNewPatientName] = useState('');
   const [newPatientAge, setNewPatientAge] = useState('');
   const [newPatientPhone, setNewPatientPhone] = useState('');
 
-  // Lista de pacientes ativos e arquivados
   const [patients, setPatients] = useState([
     {
       id: 1,
@@ -84,11 +80,9 @@ export default function Patients() {
     },
   ]);
 
-  // Filtragem principal
   const filteredPatients = patients.filter((patient) => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Aba Arquivados
     if (activeTab === 'arquivados') {
       return matchesSearch && patient.archived;
     }
@@ -96,11 +90,9 @@ export default function Patients() {
     // Se não estiver na aba de arquivados, ignora os arquivados na listagem padrão
     if (patient.archived) return false;
 
-    // Abas de Status Ativo
     if (activeTab === 'acompanhamento' && patient.statusType !== 'acompanhamento') return false;
     if (activeTab === 'atencao' && patient.statusType !== 'atencao') return false;
 
-    // Filtro de Faixa Etária
     if (filterAgeGroup === 'crianca' && patient.age >= 8) return false;
     if (filterAgeGroup === 'pre-adolescente' && (patient.age < 8 || patient.age > 12)) return false;
 
@@ -162,7 +154,6 @@ export default function Patients() {
   return (
     <div className="space-y-6 font-sans">
       
-      {/* Cabeçalho da Seção */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold font-serif text-[#172C3A] flex items-center gap-2">
@@ -178,7 +169,6 @@ export default function Patients() {
         </div>
       </div>
 
-      {/* Alerta de Sucesso */}
       {successNotice && (
         <div className="p-3.5 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 flex items-center gap-3 text-xs shadow-sm">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -186,7 +176,6 @@ export default function Patients() {
         </div>
       )}
 
-      {/* Barra de Pesquisa e Botões de Ação */}
       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
           <div className="relative flex-1 w-full">
@@ -218,7 +207,6 @@ export default function Patients() {
           </div>
         </div>
 
-        {/* Abas de Filtro de Status Interativas */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
           <div className="flex items-center gap-2">
             <button
@@ -270,7 +258,6 @@ export default function Patients() {
         </div>
       </div>
 
-      {/* Tabela de Prontuários */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -331,7 +318,6 @@ export default function Patients() {
         </div>
       </div>
 
-      {/* MODAL: FILTROS AVANÇADOS */}
       {showFilterModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
@@ -384,7 +370,6 @@ export default function Patients() {
         </div>
       )}
 
-      {/* MODAL: NOVO CADASTRO DE PACIENTE */}
       {showNewPatientModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
@@ -455,7 +440,6 @@ export default function Patients() {
         </div>
       )}
 
-      {/* MODAL: ABRIR PRONTUÁRIO / GERIR ARQUIVAMENTO */}
       {showRecordModal && selectedPatient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">

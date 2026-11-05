@@ -47,8 +47,7 @@ const responses = [
   { id: 'nao', label: 'Não falou' },
 ];
 
-// ATENÇÃO: faixas ilustrativas, só para a demonstração.
-// Troque pelo critério clínico validado antes de usar com pacientes reais.
+// faixas provisórias, falta o critério clínico
 const RISK_LEVELS = [
   {
     min: 70,
