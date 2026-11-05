@@ -106,10 +106,9 @@ export const INFO_PAGES = {
   privacidade: {
     title: 'Privacidade e LGPD',
     paragraphs: [
-      'Esta é uma versão de demonstração: pacientes, profissionais e sessões exibidos são fictícios.',
-      'Suas preferências de acessibilidade ficam guardadas apenas neste navegador e podem ser apagadas em “Restaurar padrão”.',
+      'Suas preferências de acessibilidade ficam guardadas apenas neste navegador e podem ser apagadas no botão Restaurar padrão do painel.',
       'O resultado e o histórico da triagem ficam só na memória da página e somem ao recarregar.',
-      'Em uma versão real, dados de saúde dependem de consentimento claro, conforme a LGPD.',
+      'Dados de saúde só são tratados com consentimento claro, conforme a LGPD.',
     ],
   },
 };

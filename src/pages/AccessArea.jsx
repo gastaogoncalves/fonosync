@@ -111,7 +111,7 @@ export default function AccessArea() {
     setErrors({});
     setNotice({
       title: 'Confira seu e-mail',
-      text: 'Se o endereço estiver cadastrado, você receberá as instruções. (Demonstração: nenhum e-mail é enviado.)',
+      text: 'Se o endereço estiver cadastrado, você receberá as instruções.',
     });
   };
 

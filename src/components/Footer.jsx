@@ -15,7 +15,7 @@ function ContactForm() {
     return (
       <div role="status">
         <Notice tone="success" title="Mensagem recebida">
-          Esta é uma versão de demonstração: nada foi enviado a um servidor.
+          Obrigado pelo contato. Responderemos em breve.
         </Notice>
       </div>
     );
