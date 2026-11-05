@@ -11,7 +11,6 @@ import {
   Home,
   LogOut,
   Settings,
-  Sparkles,
   UserPlus,
   Users,
   Volume2,
@@ -39,12 +38,12 @@ const navItems = [
 ];
 
 const pageInfo = {
-  dashboard: { title: 'Painel do Profissional 👋', subtitle: 'Bem-vinda de volta, Dra. Renata Lima.' },
-  pacientes: { title: 'Gestão de Pacientes 👥', subtitle: 'Cadastre, busque e gerencie os prontuários ativos.' },
-  acompanhamento: { title: 'Acompanhamento Clínico 📈', subtitle: 'Analise parâmetros fonéticos e registre evoluções.' },
-  agenda: { title: 'Agenda de Atendimentos 📅', subtitle: 'Organize sessões presenciais e teleatendimentos.' },
-  relatorios: { title: 'Relatórios e Documentos 📄', subtitle: 'Emita laudos, atestados e exportações acessíveis.' },
-  configuracoes: { title: 'Configurações do Consultório ⚙️', subtitle: 'Gerencie seu perfil e credenciais profissionais.' },
+  dashboard: { title: 'Painel do Profissional', subtitle: 'Bem-vinda de volta, Dra. Renata Lima.' },
+  pacientes: { title: 'Gestão de Pacientes', subtitle: 'Cadastre, busque e gerencie os prontuários ativos.' },
+  acompanhamento: { title: 'Acompanhamento Clínico', subtitle: 'Analise parâmetros fonéticos e registre evoluções.' },
+  agenda: { title: 'Agenda de Atendimentos', subtitle: 'Organize sessões presenciais e teleatendimentos.' },
+  relatorios: { title: 'Relatórios e Documentos', subtitle: 'Emita laudos, atestados e exportações acessíveis.' },
+  configuracoes: { title: 'Configurações do Consultório', subtitle: 'Gerencie seu perfil e credenciais profissionais.' },
 };
 
 const stats = [
@@ -236,7 +235,7 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
             <p className="text-sm text-muted">{info.subtitle}</p>
           </div>
           <div className="flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2">
-            <Sparkles className="text-primary" size={18} aria-hidden="true" />
+            <Users className="text-primary" size={18} aria-hidden="true" />
             <span className="text-xs font-bold text-navy">8 Pacientes Ativos</span>
           </div>
         </header>

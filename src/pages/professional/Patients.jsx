@@ -157,7 +157,7 @@ export default function Patients() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold font-serif text-[#172C3A] flex items-center gap-2">
-            Gestão de Pacientes 👥
+            Gestão de Pacientes
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">Cadastre, busque e gerencie os prontuários ativos e arquivados.</p>
         </div>

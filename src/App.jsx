@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="p-8 bg-red-50 text-red-900 min-h-screen font-sans">
-          <h1 className="text-xl font-bold mb-2">⚠️ Ocorreu um erro na aplicação:</h1>
+          <h1 className="text-xl font-bold mb-2">Ocorreu um erro na aplicação:</h1>
           <pre className="bg-white p-4 rounded border border-red-300 font-mono text-xs overflow-auto">
             {this.state.error?.toString()}
           </pre>

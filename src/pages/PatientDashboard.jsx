@@ -10,8 +10,12 @@ import {
   Mail,
   Phone,
   Save,
+  Flame,
+  Puzzle,
   Settings,
-  Sparkles,
+  Star,
+  Target,
+  Trophy,
   User,
 } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
@@ -28,11 +32,11 @@ const navItems = [
 ];
 
 const pageInfo = {
-  inicio: { title: 'Olá, Maria Luiza! 👋', subtitle: 'Pronta para treinar suas missões de hoje?' },
-  jogos: { title: 'Jogos Terapêuticos Prescritos 🎮', subtitle: 'Exercícios divertidos recomendados pela Dra. Renata.' },
-  consultas: { title: 'Minhas Consultas e Agendamentos 📅', subtitle: 'Histórico e próximos horários confirmados.' },
-  conquistas: { title: 'Suas Conquistas e Prêmios 🏆', subtitle: 'Acompanhe seus selos por praticar os exercícios.' },
-  configuracoes: { title: 'Configurações do Perfil ⚙️', subtitle: 'Atualize seus dados pessoais e preferências.' },
+  inicio: { title: 'Olá, Maria Luiza!', subtitle: 'Pronta para treinar suas missões de hoje?' },
+  jogos: { title: 'Jogos Terapêuticos Prescritos', subtitle: 'Exercícios divertidos recomendados pela Dra. Renata.' },
+  consultas: { title: 'Minhas Consultas e Agendamentos', subtitle: 'Histórico e próximos horários confirmados.' },
+  conquistas: { title: 'Suas Conquistas e Prêmios', subtitle: 'Acompanhe seus selos por praticar os exercícios.' },
+  configuracoes: { title: 'Configurações do Perfil', subtitle: 'Atualize seus dados pessoais e preferências.' },
 };
 
 const cardClass = 'rounded-xl border border-line bg-surface shadow-sm';
@@ -153,7 +157,7 @@ export default function PatientDashboard() {
             <p className="text-sm text-muted">{info.subtitle}</p>
           </div>
           <div className="flex items-center gap-2 rounded-md border border-warning bg-warning/10 px-4 py-2">
-            <Sparkles className="text-warning" size={18} aria-hidden="true" />
+            <Trophy className="text-warning" size={18} aria-hidden="true" />
             <span className="text-xs font-bold text-navy">120 Pontos acumulados</span>
           </div>
         </header>
@@ -193,14 +197,18 @@ export default function PatientDashboard() {
         {activeTab === 'jogos' && (
           <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className={`${cardClass} space-y-3 p-5`}>
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-xl" aria-hidden="true">🎯</div>
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Target size={24} aria-hidden="true" />
+              </div>
               <h3 className="font-bold text-navy">Caça-Sons: Fonema /r/</h3>
               <p className="text-xs text-muted">Identifique palavras com o som vibrante.</p>
               <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
             </div>
 
             <div className={`${cardClass} space-y-3 p-5`}>
-              <div className="flex size-12 items-center justify-center rounded-xl bg-warning/10 text-xl" aria-hidden="true">🧩</div>
+              <div className="flex size-12 items-center justify-center rounded-xl bg-warning/10 text-warning">
+                <Puzzle size={24} aria-hidden="true" />
+              </div>
               <h3 className="font-bold text-navy">Jogo da Rima</h3>
               <p className="text-xs text-muted">Combine pares de palavras com terminação igual.</p>
               <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
@@ -226,12 +234,12 @@ export default function PatientDashboard() {
         {activeTab === 'conquistas' && (
           <section className="grid gap-4 sm:grid-cols-3">
             <div className={`${cardClass} space-y-2 p-5 text-center`}>
-              <span className="text-4xl" aria-hidden="true">🌟</span>
+              <Star className="mx-auto text-warning" size={36} aria-hidden="true" />
               <h3 className="text-sm font-bold text-navy">Primeira Triagem</h3>
               <p className="text-xs text-muted">Concluiu o primeiro teste de fala.</p>
             </div>
             <div className={`${cardClass} space-y-2 p-5 text-center`}>
-              <span className="text-4xl" aria-hidden="true">🔥</span>
+              <Flame className="mx-auto text-warning" size={36} aria-hidden="true" />
               <h3 className="text-sm font-bold text-navy">7 Dias Seguidos</h3>
               <p className="text-xs text-muted">Treinou a articulação a semana toda!</p>
             </div>
