@@ -1,30 +1,24 @@
 import { useState } from 'react';
-import { Sun, Volume2 } from 'lucide-react';
-import A11yModal from './A11yModal';
+import AccessibilityPanel from './AccessibilityPanel';
+
+const baseClass = 'px-3 py-1.5 text-xs font-bold border rounded-md transition-colors';
 
 export default function A11yActions() {
-  const [showA11y, setShowA11y] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowA11y(true)}
-          className="px-3 py-1.5 text-xs font-bold border border-navy rounded-md text-navy hover:bg-mist flex items-center gap-1.5"
-        >
-          <Sun size={14} /> Acessibilidade
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowA11y(true)}
-          className="px-3 py-1.5 text-xs font-bold border border-line rounded-md text-navy hover:bg-mist flex items-center gap-1.5"
-        >
-          <Volume2 size={14} /> Ouvir página
-        </button>
-      </div>
+    <div className="relative flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-controls="a11y-painel"
+        className={`${baseClass} border-primary bg-primary text-on-primary hover:brightness-[0.82]`}
+      >
+        Acessibilidade
+      </button>
 
-      <A11yModal isOpen={showA11y} onClose={() => setShowA11y(false)} />
-    </>
+      {open && <AccessibilityPanel id="a11y-painel" onClose={() => setOpen(false)} />}
+    </div>
   );
 }

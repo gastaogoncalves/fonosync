@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Pause, Play, RotateCcw, Square } from 'lucide-react';
 import { useA11y } from '../context/A11yContext';
 
-const speeds = [0.75, 1, 1.5, 2];
+const speeds = [0.5, 0.75, 1, 1.5, 2, 2.5];
 
 function formatTime(seconds) {
   const safe = Math.max(0, Math.round(seconds));
@@ -61,6 +61,7 @@ export default function AudioPlayerBar() {
     <section
       ref={barRef}
       aria-label="Leitor de voz da página"
+      data-a11y-skip
       className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-band p-4 font-sans text-white shadow-2xl"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-3">

@@ -1,56 +1,47 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   A11Y_STORAGE_KEY,
-  BACKGROUND_OPTIONS,
+  BUTTON_OPTIONS,
+  COLOR_MODE_OPTIONS,
   DEFAULT_SETTINGS,
   DEFAULT_VOICE,
   FONT_MAX,
   FONT_MIN,
   FONT_STEP,
   LEADING_OPTIONS,
-  SPEECH_RATES,
+  SPEECH_RATE_MAX,
+  SPEECH_RATE_MIN,
+  SPEECH_RATE_STEP,
   TEXT_OPTIONS,
   TRACKING_OPTIONS,
   VOICE_OPTIONS,
 } from '../utils/constants';
 
 const noop = () => {};
-const CHARS_PER_SECOND = 14; // estimativa de leitura em pt-BR a 1× (só para o relógio do player)
-const EMPTY_TIMELINE = { prefix: [0], lengths: [], total: 0 };
 
 const A11yContext = createContext({
   settings: DEFAULT_SETTINGS,
-  draft: DEFAULT_SETTINGS,
-  updateDraft: noop,
+  updateSettings: noop,
   hasUnsavedChanges: false,
-  discardDraft: noop,
   savePreferences: noop,
   resetDefaults: noop,
   saveStatus: null,
   voiceGender: DEFAULT_VOICE.gender,
   setVoiceGender: noop,
+  speechSupported: false,
+  voiceInfo: { exact: false, hasPortuguese: false, name: null },
   speechRate: DEFAULT_VOICE.rate,
   setSpeechRate: noop,
   isPlaying: false,
-  isPlayerOpen: false,
   playerStatus: 'idle',
-  currentTime: 0,
-  duration: 0,
-  speed: DEFAULT_VOICE.rate,
-  volume: 100,
   pageTitle: '',
   speakPageContent: noop,
   speakText: noop,
   stopSpeaking: noop,
-  playAudio: noop,
-  pauseAudio: noop,
-  stopAudio: noop,
-  restartAudio: noop,
-  setSpeed: noop,
-  setVolume: noop,
 });
 
-/* ---------- preferências salvas ---------- */
+const validRate = (value) => Number(value) >= SPEECH_RATE_MIN && Number(value) <= SPEECH_RATE_MAX;
+const roundRate = (value) => Math.round(Number(value) / SPEECH_RATE_STEP) * SPEECH_RATE_STEP;
 
 function loadPreferences() {
   const fallback = { settings: DEFAULT_SETTINGS, voice: DEFAULT_VOICE };
@@ -70,14 +61,15 @@ function loadPreferences() {
       settings[key] = raw[key] === true;
     });
 
-    if (BACKGROUND_OPTIONS.some((option) => option.id === raw.bgColor)) settings.bgColor = raw.bgColor;
+    if (COLOR_MODE_OPTIONS.some((option) => option.value === raw.colorMode)) settings.colorMode = raw.colorMode;
+    if (BUTTON_OPTIONS.some((option) => option.id === raw.buttonColor)) settings.buttonColor = raw.buttonColor;
     if (TEXT_OPTIONS.some((option) => option.id === raw.textColor)) settings.textColor = raw.textColor;
     if (LEADING_OPTIONS.some((option) => option.value === raw.leading)) settings.leading = raw.leading;
     if (TRACKING_OPTIONS.some((option) => option.value === raw.tracking)) settings.tracking = raw.tracking;
 
     const voice = {
       gender: VOICE_OPTIONS.some((option) => option.value === raw.voiceGender) ? raw.voiceGender : DEFAULT_VOICE.gender,
-      rate: SPEECH_RATES.some((option) => option.value === Number(raw.speechRate)) ? Number(raw.speechRate) : DEFAULT_VOICE.rate,
+      rate: validRate(raw.speechRate) ? roundRate(raw.speechRate) : DEFAULT_VOICE.rate,
     };
 
     return { settings, voice };
@@ -85,8 +77,6 @@ function loadPreferences() {
     return fallback;
   }
 }
-
-/* ---------- aplicação no documento ---------- */
 
 function setAttr(root, name, value) {
   if (value) root.setAttribute(name, value);
@@ -115,102 +105,120 @@ function applyToDocument(settings) {
   setAttr(root, 'data-tracking', tracking);
   setVar(root, '--a11y-tracking', tracking);
 
-  const bgHex = BACKGROUND_OPTIONS.find((option) => option.id === settings.bgColor)?.hex;
-  setAttr(root, 'data-a11y-bg', bgHex && settings.bgColor);
-  setVar(root, '--a11y-bg', bgHex);
+  setAttr(root, 'data-colorblind', settings.colorMode !== 'default' && settings.colorMode);
+
+  const buttonHex = BUTTON_OPTIONS.find((option) => option.id === settings.buttonColor)?.hex;
+  setAttr(root, 'data-a11y-button', buttonHex && settings.buttonColor);
+  setVar(root, '--a11y-button', buttonHex);
 
   const textHex = TEXT_OPTIONS.find((option) => option.id === settings.textColor)?.hex;
   setAttr(root, 'data-a11y-text', textHex && settings.textColor);
   setVar(root, '--a11y-text', textHex);
 }
 
-/* ---------- leitor de voz ---------- */
+const COLOR_MATRICES = {
+  protanopia: '1 0 0 0 0  0.4789 0.4769 0.0442 0 0  0.5973 -0.6887 1.0914 0 0  0 0 0 1 0',
+  deuteranopia: '1 0 0 0 0  0.1628 0.725 0.1122 0 0  0.4547 -0.6454 1.1907 0 0  0 0 0 1 0',
+  tritanopia: '0.7412 -0.4072 0.666 0 0  0.0751 0.5852 0.3397 0 0  0 0 1 0 0  0 0 0 1 0',
+};
+
+function ColorFilters() {
+  return (
+    <svg aria-hidden="true" focusable="false" width="0" height="0" style={{ position: 'absolute' }}>
+      {Object.entries(COLOR_MATRICES).map(([name, values]) => (
+        <filter key={name} id={`a11y-${name}`} colorInterpolationFilters="linearRGB">
+          <feColorMatrix type="matrix" values={values} />
+        </filter>
+      ))}
+      <filter id="a11y-achromatopsia" colorInterpolationFilters="linearRGB">
+        <feColorMatrix type="saturate" values="0" />
+      </filter>
+    </svg>
+  );
+}
 
 const supportsSpeech = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-// Quebra o texto em frases curtas: o progresso fica mais preciso e as vozes online não travam em textos longos
 function splitIntoChunks(text) {
-  const prepared = text
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => (/[.!?…:;]$/.test(line) ? line : `${line}.`))
-    .join(' ');
-
-  const chunks = [];
-  (prepared.match(/[^.!?…]+[.!?…]*\s*/g) || []).forEach((sentence) => {
-    let rest = sentence.trim();
-    while (rest.length > 200) {
-      let cut = rest.lastIndexOf(' ', 200);
-      if (cut < 80) cut = 200;
-      chunks.push(rest.slice(0, cut).trim());
-      rest = rest.slice(cut).trim();
-    }
-    if (rest) chunks.push(rest);
-  });
-  return chunks;
+  // Limpa e divide o texto em frases menores para evitar o corte do navegador
+  const cleaned = text.replace(/\s+/g, ' ').trim();
+  const sentences = cleaned.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g) || [cleaned];
+  return sentences.map(s => s.trim()).filter(Boolean);
 }
 
-function pickVoice(voices, gender) {
-  const portuguese = voices.filter((voice) => voice.lang && /pt|br/i.test(voice.lang));
-  const matcher =
-    gender === 'male'
-      ? /\bmale\b|daniel|felipe|ricardo|homem|masculin/i
-      : /female|luciana|maria|helena|google português|mulher|feminin/i;
-  return portuguese.find((voice) => matcher.test(voice.name)) || portuguese[gender === 'male' ? 1 : 0] || portuguese[0] || voices[0] || null;
+const MALE_VOICE = /\b(male|masculin[oa]?|homem)\b|daniel|felipe|ricardo|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|leandro|nicolau|val[eé]rio|thiago|eddy|reed|rocko|grandpa/i;
+const FEMALE_VOICE = /female|feminin[oa]?|mulher|luciana|fernanda|maria|francisca|helena|helo[ií]sa|thalita|brenda|giovanna|let[ií]cia|manuela|yara|elza|joana|google portugu[eê]s|\bflo\b|sandy|shelley|grandma/i;
+const MALE_FALLBACK_PITCH = 0.6;
+
+const isBrazilian = (voice) => /^pt[-_]br$/i.test(voice.lang || '');
+
+function resolveVoice(voices, gender) {
+  const portuguese = voices.filter((voice) => /^pt([-_]|$)/i.test(voice.lang || ''));
+  const ordered = [...portuguese.filter(isBrazilian), ...portuguese.filter((voice) => !isBrazilian(voice))];
+
+  const wanted = gender === 'male' ? MALE_VOICE : FEMALE_VOICE;
+  const other = gender === 'male' ? FEMALE_VOICE : MALE_VOICE;
+
+  const exact = ordered.find((voice) => wanted.test(voice.name));
+  if (exact) return { voice: exact, pitch: 1, exact: true };
+
+  const neutral = ordered.find((voice) => !other.test(voice.name)) || ordered[0] || voices[0] || null;
+  return { voice: neutral, pitch: gender === 'male' ? MALE_FALLBACK_PITCH : 1, exact: false };
 }
 
-/* ---------- provider ---------- */
+function readablePageText() {
+  const container = document.querySelector('main') || document.body;
+  if (!container) return document.title || 'Página';
+
+  const clone = container.cloneNode(true);
+  clone.querySelectorAll('[data-a11y-skip], script, style, noscript').forEach((el) => el.remove());
+
+  const text = clone.innerText || clone.textContent || '';
+  return text.trim() || document.title || 'Conteúdo da página';
+}
 
 export function A11yProvider({ children }) {
   const [initial] = useState(loadPreferences);
 
-  // applied = o que está valendo no site; draft = o que está sendo editado no painel
-  const [state, setState] = useState({ applied: initial.settings, draft: initial.settings });
-  const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'warning' | 'reset' | null
+  const [settings, setSettings] = useState(initial.settings);
+  const [saved, setSaved] = useState(initial.settings);
+  const [saveStatus, setSaveStatus] = useState(null);
 
   const [voiceGender, setVoiceGender] = useState(initial.voice.gender);
   const [speechRate, setSpeechRate] = useState(initial.voice.rate);
-  const [volume, setVolume] = useState(100);
+  const [savedVoice, setSavedVoice] = useState(initial.voice);
   const [availableVoices, setAvailableVoices] = useState([]);
 
-  const [playerStatus, setPlayerStatus] = useState('idle'); // 'idle' | 'playing' | 'paused' | 'done'
-  const [pageTitle, setPageTitle] = useState('');
-  const [timeline, setTimeline] = useState(EMPTY_TIMELINE);
-  const [position, setPosition] = useState({ index: 0, elapsed: 0 });
+  const [playerStatus, setPlayerStatus] = useState('idle');
 
   const chunksRef = useRef([]);
   const indexRef = useRef(0);
-  const runRef = useRef(0); // invalida callbacks de falas antigas
-  const liveRef = useRef({ rate: speechRate, volume, gender: voiceGender, voices: [] });
+  const liveRef = useRef({ rate: speechRate, gender: voiceGender, voices: [] });
 
   useEffect(() => {
-    liveRef.current = { rate: speechRate, volume, gender: voiceGender, voices: availableVoices };
-  }, [speechRate, volume, voiceGender, availableVoices]);
+    liveRef.current = { rate: speechRate, gender: voiceGender, voices: availableVoices };
+  }, [speechRate, voiceGender, availableVoices]);
 
-  // Só o que foi salvo vai para a página
   useLayoutEffect(() => {
-    applyToDocument(state.applied);
-  }, [state.applied]);
+    applyToDocument(settings);
+  }, [settings]);
 
-  const updateDraft = useCallback((patch) => {
-    setState((current) => ({ ...current, draft: { ...current.draft, ...patch } }));
+  const updateSettings = useCallback((patch) => {
+    setSettings((current) => ({ ...current, ...patch }));
     setSaveStatus(null);
   }, []);
 
-  const discardDraft = useCallback(() => {
-    setState((current) => ({ ...current, draft: current.applied }));
-    setSaveStatus(null);
-  }, []);
-
-  const hasUnsavedChanges = Object.keys(state.draft).some((key) => state.draft[key] !== state.applied[key]);
+  const hasUnsavedChanges =
+    Object.keys(settings).some((key) => settings[key] !== saved[key]) ||
+    voiceGender !== savedVoice.gender ||
+    speechRate !== savedVoice.rate;
 
   const savePreferences = () => {
-    const next = state.draft;
-    setState({ applied: next, draft: next });
+    setSaved(settings);
+    setSavedVoice({ gender: voiceGender, rate: speechRate });
 
     try {
-      window.localStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify({ ...next, voiceGender, speechRate }));
+      window.localStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify({ ...settings, voiceGender, speechRate }));
       setSaveStatus('success');
     } catch {
       setSaveStatus('warning');
@@ -218,32 +226,38 @@ export function A11yProvider({ children }) {
   };
 
   const resetDefaults = () => {
-    setState({ applied: DEFAULT_SETTINGS, draft: DEFAULT_SETTINGS });
+    setSettings(DEFAULT_SETTINGS);
+    setSaved(DEFAULT_SETTINGS);
+    setSavedVoice(DEFAULT_VOICE);
     setVoiceGender(DEFAULT_VOICE.gender);
     setSpeechRate(DEFAULT_VOICE.rate);
+    liveRef.current = { ...liveRef.current, gender: DEFAULT_VOICE.gender, rate: DEFAULT_VOICE.rate };
 
     try {
       window.localStorage.removeItem(A11Y_STORAGE_KEY);
-    } catch {
-      // sem armazenamento, nada para limpar
-    }
+    } catch {}
     setSaveStatus('reset');
   };
 
-  /* vozes + parar a leitura ao trocar de página */
   useEffect(() => {
     if (!supportsSpeech()) return undefined;
     const synth = window.speechSynthesis;
 
-    const updateVoices = () => setAvailableVoices(synth.getVoices() || []);
+    const updateVoices = () => {
+      const voices = synth.getVoices() || [];
+      setAvailableVoices(voices);
+    };
+
+    updateVoices();
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = updateVoices;
+    }
+
     const stopOnNavigate = () => {
-      runRef.current += 1;
       synth.cancel();
       setPlayerStatus('idle');
     };
 
-    updateVoices();
-    synth.onvoiceschanged = updateVoices;
     window.addEventListener('hashchange', stopOnNavigate);
 
     return () => {
@@ -253,47 +267,37 @@ export function A11yProvider({ children }) {
     };
   }, []);
 
-  // Relógio do player enquanto fala
-  useEffect(() => {
-    if (playerStatus !== 'playing') return undefined;
-    const timer = setInterval(() => setPosition((current) => ({ ...current, elapsed: current.elapsed + 0.25 })), 250);
-    return () => clearInterval(timer);
-  }, [playerStatus]);
+  const speakNextChunk = () => {
+    if (!supportsSpeech()) return;
+    const synth = window.speechSynthesis;
 
-  const buildUtterance = (text, overrides = {}) => {
-    const live = liveRef.current;
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voice = pickVoice(live.voices, live.gender);
-    if (voice) utterance.voice = voice;
-    utterance.lang = 'pt-BR';
-    utterance.rate = overrides.rate ?? live.rate;
-    utterance.volume = (overrides.volume ?? live.volume) / 100;
-    return utterance;
-  };
-
-  const speakChunk = (index, overrides) => {
-    const runId = ++runRef.current;
-    window.speechSynthesis.cancel();
-
-    const chunks = chunksRef.current;
-    if (index >= chunks.length) {
+    if (indexRef.current >= chunksRef.current.length) {
       setPlayerStatus('done');
       return;
     }
 
-    indexRef.current = index;
-    setPosition({ index, elapsed: 0 });
-    setPlayerStatus('playing');
+    const textChunk = chunksRef.current[indexRef.current];
+    const live = liveRef.current;
+    const utterance = new SpeechSynthesisUtterance(textChunk);
 
-    const utterance = buildUtterance(chunks[index], overrides);
+    const { voice, pitch } = resolveVoice(live.voices, live.gender);
+    if (voice) utterance.voice = voice;
+    utterance.lang = 'pt-BR';
+    utterance.pitch = pitch;
+    utterance.rate = live.rate;
+    utterance.volume = 1.0;
+
     utterance.onend = () => {
-      if (runRef.current === runId) speakChunk(index + 1);
+      indexRef.current += 1;
+      speakNextChunk();
     };
-    utterance.onerror = (event) => {
-      if (runRef.current !== runId || event.error === 'canceled' || event.error === 'interrupted') return;
+
+    utterance.onerror = () => {
       setPlayerStatus('idle');
     };
-    window.speechSynthesis.speak(utterance);
+
+    setPlayerStatus('playing');
+    synth.speak(utterance);
   };
 
   const startReading = (customText) => {
@@ -302,108 +306,95 @@ export function A11yProvider({ children }) {
       return;
     }
 
-    const root = document.querySelector('main') || document.body;
-    const text = (typeof customText === 'string' ? customText : root.innerText).slice(0, 8000);
-    const chunks = splitIntoChunks(text);
+    const synth = window.speechSynthesis;
+    synth.cancel(); // Limpa qualquer áudio anterior preso na fila
+
+    const textToRead = (typeof customText === 'string' ? customText : readablePageText());
+    const chunks = splitIntoChunks(textToRead);
+    
     if (chunks.length === 0) return;
 
-    const lengths = chunks.map((chunk) => chunk.length);
-    const prefix = lengths.reduce((acc, length) => [...acc, acc[acc.length - 1] + length], [0]);
-
     chunksRef.current = chunks;
-    setTimeline({ prefix, lengths, total: prefix[prefix.length - 1] });
-    setPageTitle(root.querySelector('h1')?.textContent?.trim() || document.title || 'Página');
-    speakChunk(0);
+    indexRef.current = 0;
+
+    // Pequeno atraso para garantir que o navegador processe o cancel() antes de iniciar
+    setTimeout(() => {
+      synth.resume();
+      speakNextChunk();
+    }, 100);
   };
 
-  // Liga e desliga (usado pelos botões "Ouvir página")
   const speakPageContent = (customText) => {
-    if (playerStatus !== 'idle' && typeof customText !== 'string') {
+    if (playerStatus === 'playing' && typeof customText !== 'string') {
       stopAudio();
       return;
     }
     startReading(customText);
   };
 
-  // Fala uma palavra ou frase curta sem abrir o player
   const speakText = (text) => {
-    if (!supportsSpeech()) {
-      alert('Seu navegador não suporta leitura por síntese de voz.');
-      return;
-    }
-    runRef.current += 1;
-    setPlayerStatus('idle');
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(buildUtterance(text));
-  };
+    if (!supportsSpeech()) return;
+    const synth = window.speechSynthesis;
+    synth.cancel();
+    synth.resume();
 
-  const playAudio = () => {
-    if (playerStatus === 'playing') return;
-    speakChunk(playerStatus === 'done' ? 0 : indexRef.current);
-  };
+    const live = liveRef.current;
+    const utterance = new SpeechSynthesisUtterance(text);
+    const { voice, pitch } = resolveVoice(live.voices, live.gender);
+    if (voice) utterance.voice = voice;
+    utterance.lang = 'pt-BR';
+    utterance.pitch = pitch;
+    utterance.rate = live.rate;
+    utterance.volume = 1.0;
 
-  // Pausa de forma estável: para a frase atual e retoma do começo dela
-  const pauseAudio = () => {
-    if (playerStatus !== 'playing') return;
-    runRef.current += 1;
-    window.speechSynthesis.cancel();
-    setPlayerStatus('paused');
+    synth.speak(utterance);
   };
 
   function stopAudio() {
-    runRef.current += 1;
-    if (supportsSpeech()) window.speechSynthesis.cancel();
+    if (supportsSpeech()) {
+      window.speechSynthesis.cancel();
+    }
     setPlayerStatus('idle');
   }
 
-  const restartAudio = () => speakChunk(0);
-
-  const setSpeed = (rate) => {
+  const setSpeed = (value) => {
+    const rate = roundRate(Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, Number(value))));
     setSpeechRate(rate);
-    if (playerStatus === 'playing') speakChunk(indexRef.current, { rate });
+    liveRef.current = { ...liveRef.current, rate };
   };
 
-  /* relógio do player */
-  const effectiveSpeed = CHARS_PER_SECOND * speechRate;
-  const charsBefore = timeline.prefix[position.index] ?? 0;
-  const withinChunk = Math.min(timeline.lengths[position.index] ?? 0, position.elapsed * effectiveSpeed);
-  const charsDone = playerStatus === 'done' ? timeline.total : charsBefore + withinChunk;
+  const changeVoiceGender = (gender) => {
+    setVoiceGender(gender);
+    liveRef.current = { ...liveRef.current, gender };
+  };
+
+  const resolved = resolveVoice(availableVoices, voiceGender);
+  const voiceInfo = { exact: resolved.exact, hasPortuguese: Boolean(resolved.voice), name: resolved.voice?.name ?? null };
 
   return (
     <A11yContext.Provider
       value={{
-        settings: state.applied,
-        draft: state.draft,
-        updateDraft,
+        settings,
+        updateSettings,
         hasUnsavedChanges,
-        discardDraft,
         savePreferences,
         resetDefaults,
         saveStatus,
         voiceGender,
-        setVoiceGender,
+        setVoiceGender: changeVoiceGender,
         speechRate,
-        setSpeechRate,
-        isPlaying: playerStatus !== 'idle',
-        isPlayerOpen: playerStatus !== 'idle',
+        setSpeechRate: setSpeed,
+        speechSupported: supportsSpeech(),
+        voiceInfo,
+        isPlaying: playerStatus === 'playing',
         playerStatus,
-        currentTime: charsDone / effectiveSpeed,
-        duration: timeline.total / effectiveSpeed,
-        speed: speechRate,
-        volume,
-        pageTitle,
         speakPageContent,
         speakText,
         stopSpeaking: stopAudio,
-        playAudio,
-        pauseAudio,
-        stopAudio,
-        restartAudio,
-        setSpeed,
-        setVolume,
       }}
     >
       {children}
+      <ColorFilters />
     </A11yContext.Provider>
   );
 }

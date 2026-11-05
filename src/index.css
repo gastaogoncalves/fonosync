@@ -73,22 +73,30 @@
 }
 
 /*
-  Cor de fundo e cor do texto escolhidas no painel.
-  O A11yContext só liga estes atributos quando a pessoa clica em
-  "Salvar preferências". Ficam desativados no modo escuro e no alto
-  contraste, que têm paleta própria.
+  Cor do texto e cor dos botões escolhidas no painel.
+  O A11yContext liga estes atributos na hora em que a pessoa escolhe a cor.
+  Ficam desativados no modo escuro e no alto contraste, que têm paleta própria.
+  A cor dos botões troca a cor primária: botões, links, ícones e barras de progresso.
 */
-:root[data-a11y-bg]:not([data-theme="dark"]):not([data-contrast="high"]) {
-  --color-surface: var(--a11y-bg);
-  --color-canvas: var(--a11y-bg);
-  --color-mist: color-mix(in srgb, var(--a11y-bg) 91%, black);
-}
-
 :root[data-a11y-text]:not([data-theme="dark"]):not([data-contrast="high"]) {
   --color-ink: var(--a11y-text);
   --color-navy: var(--a11y-text);
   --color-muted: color-mix(in srgb, var(--a11y-text) 85%, var(--color-surface));
 }
+
+:root[data-a11y-button]:not([data-theme="dark"]):not([data-contrast="high"]) {
+  --color-primary: var(--a11y-button);
+  --color-on-primary: #ffffff;
+}
+
+/*
+  Modo de cor (daltonismo): os filtros SVG (#a11y-...) são renderizados pelo A11yProvider.
+  No elemento raiz o filtro não quebra position: fixed/sticky dos filhos.
+*/
+:root[data-colorblind="protanopia"] { filter: url("#a11y-protanopia"); }
+:root[data-colorblind="deuteranopia"] { filter: url("#a11y-deuteranopia"); }
+:root[data-colorblind="tritanopia"] { filter: url("#a11y-tritanopia"); }
+:root[data-colorblind="achromatopsia"] { filter: url("#a11y-achromatopsia"); }
 
 :root[data-leading] body * {
   line-height: var(--a11y-leading) !important;
@@ -107,8 +115,13 @@
   scroll-behavior: auto !important;
 }
 
-:root[data-targets="large"] :is(button, input, select) {
+:root[data-targets="large"] :is(button:not([role="switch"]), input:not(.sr-only), select) {
   min-height: 3.5rem;
+}
+
+:root[data-targets="large"] label:has(> input.sr-only) {
+  min-height: 3.5rem;
+  min-width: 3.5rem;
 }
 
 :root[data-targets="large"] a {

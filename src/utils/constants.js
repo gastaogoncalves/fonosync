@@ -11,29 +11,46 @@ export const DEFAULT_SETTINGS = Object.freeze({
   darkMode: false,
   reduceMotion: false,
   largeTargets: false,
-  bgColor: 'default', // id de BACKGROUND_OPTIONS
+  colorMode: 'default', // value de COLOR_MODE_OPTIONS (daltonismo)
   textColor: 'default', // id de TEXT_OPTIONS
+  buttonColor: 'default', // id de BUTTON_OPTIONS
   leading: 'normal',
   tracking: 'normal',
 });
 
 export const DEFAULT_VOICE = Object.freeze({ gender: 'female', rate: 1 });
 
-// Cores de fundo. Para trocar um tom, altere só o `hex` (e o `preview`).
-// "Padrão" não tem hex: mantém as cores originais do design.
-export const BACKGROUND_OPTIONS = [
-  { id: 'default', label: 'Padrão', hex: null, preview: '#ffffff' },
-  { id: 'bege', label: 'Bege', hex: '#f6ecd8', preview: '#f6ecd8' },
-  { id: 'azul', label: 'Azul claro', hex: '#d8ebf7', preview: '#d8ebf7' },
-  { id: 'verde', label: 'Verde claro', hex: '#dcefe2', preview: '#dcefe2' },
+// Modos para daltonismo. Os três primeiros redistribuem as cores para que o par
+// confundido (vermelho/verde ou azul/amarelo) fique mais fácil de distinguir.
+// Os filtros em si ficam no A11yContext (componente ColorFilters).
+export const COLOR_MODE_OPTIONS = [
+  { value: 'default', label: 'Padrão' },
+  { value: 'protanopia', label: 'Protanopia (dificuldade com vermelho)' },
+  { value: 'deuteranopia', label: 'Deuteranopia (dificuldade com verde)' },
+  { value: 'tritanopia', label: 'Tritanopia (dificuldade com azul)' },
+  { value: 'achromatopsia', label: 'Tons de cinza (acromatopsia)' },
 ];
 
-// Cores de texto. O vermelho é um tom escuro para manter contraste AA
-// (mais de 4,5:1) sobre branco, bege, azul claro e verde claro.
+// Cores de texto. Todas têm contraste acima de 7:1 sobre branco.
+// "Padrão" não tem hex: mantém as cores originais do design.
 export const TEXT_OPTIONS = [
-  { id: 'default', label: 'Padrão', hex: null, preview: '#172c3a' },
-  { id: 'preto', label: 'Preto', hex: '#000000', preview: '#000000' },
-  { id: 'vermelho', label: 'Vermelho', hex: '#b3001b', preview: '#b3001b' },
+  { id: 'default', label: 'Padrão', hex: null },
+  { id: 'preto', label: 'Preto', hex: '#000000' },
+  { id: 'grafite', label: 'Grafite azulado', hex: '#14283a' },
+  { id: 'marinho', label: 'Azul-marinho', hex: '#0a2f5a' },
+  { id: 'marrom', label: 'Marrom', hex: '#4a2a0f' },
+  { id: 'vinho', label: 'Vinho', hex: '#5a0f22' },
+];
+
+// Cores dos botões (e demais elementos da cor primária: links, ícones, barras).
+// Todas têm contraste acima de 4,5:1 com o texto branco que fica sobre elas.
+export const BUTTON_OPTIONS = [
+  { id: 'default', label: 'Padrão', hex: null },
+  { id: 'verde', label: 'Verde', hex: '#1f6b45' },
+  { id: 'roxo', label: 'Roxo', hex: '#5b3fa0' },
+  { id: 'carmim', label: 'Carmim', hex: '#8c1d40' },
+  { id: 'laranja', label: 'Laranja', hex: '#b04a0b' },
+  { id: 'preto', label: 'Preto', hex: '#000000' },
 ];
 
 export const LEADING_OPTIONS = [
@@ -53,13 +70,10 @@ export const VOICE_OPTIONS = [
   { value: 'male', label: 'Masculina' },
 ];
 
-export const SPEECH_RATES = [
-  { value: 0.75, label: '0,75× (lento)' },
-  { value: 1, label: '1× (normal)' },
-  { value: 1.25, label: '1,25× (rápido)' },
-  { value: 1.5, label: '1,5× (muito rápido)' },
-  { value: 2, label: '2× (máximo)' },
-];
+// Velocidade da fala (SpeechSynthesisUtterance.rate): de 0,5× a 2,5×, de 0,25 em 0,25
+export const SPEECH_RATE_MIN = 0.5;
+export const SPEECH_RATE_MAX = 2.5;
+export const SPEECH_RATE_STEP = 0.25;
 
 export const FEATURE_DETAILS = {
   desafio: [
