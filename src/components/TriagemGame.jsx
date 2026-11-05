@@ -19,7 +19,7 @@ import DataTable from './DataTable';
 import Notice from './Notice';
 import StatusBadge from './StatusBadge';
 import { buttonClass } from './buttonStyles';
-import { useA11y } from '../context/A11yContext';
+import { useA11y } from '../hooks/useA11y';
 
 const modalities = [
   { id: '0-2', age: '0-2 anos', icon: ClipboardList, title: 'Formulário de Marcos', desc: 'Observação guiada de comunicação, compreensão e expressão.' },

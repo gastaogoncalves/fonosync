@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { A11yContext } from '../hooks/useA11y';
 import {
   A11Y_STORAGE_KEY,
   BACKGROUND_OPTIONS,
@@ -14,41 +15,9 @@ import {
   VOICE_OPTIONS,
 } from '../utils/constants';
 
-const noop = () => {};
 const CHARS_PER_SECOND = 14; // estimativa de leitura em pt-BR a 1× (só para o relógio do player)
 const EMPTY_TIMELINE = { prefix: [0], lengths: [], total: 0 };
 
-const A11yContext = createContext({
-  settings: DEFAULT_SETTINGS,
-  draft: DEFAULT_SETTINGS,
-  updateDraft: noop,
-  hasUnsavedChanges: false,
-  discardDraft: noop,
-  savePreferences: noop,
-  resetDefaults: noop,
-  saveStatus: null,
-  voiceGender: DEFAULT_VOICE.gender,
-  setVoiceGender: noop,
-  speechRate: DEFAULT_VOICE.rate,
-  setSpeechRate: noop,
-  isPlaying: false,
-  isPlayerOpen: false,
-  playerStatus: 'idle',
-  currentTime: 0,
-  duration: 0,
-  speed: DEFAULT_VOICE.rate,
-  volume: 100,
-  pageTitle: '',
-  speakPageContent: noop,
-  speakText: noop,
-  stopSpeaking: noop,
-  playAudio: noop,
-  pauseAudio: noop,
-  stopAudio: noop,
-  restartAudio: noop,
-  setSpeed: noop,
-  setVolume: noop,
-});
 
 /* ---------- preferências salvas ---------- */
 
@@ -407,5 +376,3 @@ export function A11yProvider({ children }) {
     </A11yContext.Provider>
   );
 }
-
-export const useA11y = () => useContext(A11yContext);

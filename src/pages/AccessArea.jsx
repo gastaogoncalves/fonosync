@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Accessibility, ArrowRight, Eye, EyeOff, Lock, ShieldCheck, User, UserCheck, Volume2, VolumeX } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
-import { useA11y } from '../context/A11yContext';
+import { useA11y } from '../hooks/useA11y';
 import A11yModal from '../components/A11yModal';
 import InfoDialog from '../components/InfoDialog';
 import Notice from '../components/Notice';

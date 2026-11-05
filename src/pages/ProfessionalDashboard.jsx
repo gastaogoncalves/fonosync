@@ -17,7 +17,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
-import { useA11y } from '../context/A11yContext';
+import { useA11y } from '../hooks/useA11y';
 import A11yModal from '../components/A11yModal';
 import Button from '../components/Button';
 import Notice from '../components/Notice';
@@ -145,11 +145,11 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
   const { speakPageContent } = useA11y();
 
   const navigateTo = (newSection) => {
-    window.location.hash = `#/profissional/${newSection}`;
+    window.location.assign(`#/profissional/${newSection}`);
   };
 
   const handleLogout = () => {
-    window.location.hash = '#/';
+    window.location.assign('#/');
   };
 
   const info = pageInfo[activeSection] ?? pageInfo.dashboard;

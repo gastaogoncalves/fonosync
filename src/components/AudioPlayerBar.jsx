@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Pause, Play, RotateCcw, Square } from 'lucide-react';
-import { useA11y } from '../context/A11yContext';
+import { useA11y } from '../hooks/useA11y';
 
 const speeds = [0.75, 1, 1.5, 2];
 

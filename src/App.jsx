@@ -38,7 +38,7 @@ class ErrorBoundary extends React.Component {
 }
 
 function Router() {
-  const route = useHashRoute ? useHashRoute() : '/';
+  const route = useHashRoute();
 
   if (route === '/triagem') {
     return (

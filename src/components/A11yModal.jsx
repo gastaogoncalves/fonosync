@@ -3,7 +3,7 @@ import { Check, RotateCcw, Save, Sliders, UserCheck, Volume2, VolumeX, X } from 
 import Button from './Button';
 import Notice from './Notice';
 import Switch from './Switch';
-import { useA11y } from '../context/A11yContext';
+import { useA11y } from '../hooks/useA11y';
 import {
   BACKGROUND_OPTIONS,
   FONT_MAX,
