@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   textColor: 'default', // id de TEXT_OPTIONS
   leading: 'normal',
   tracking: 'normal',
+  colorVision: 'normal',
 });
 
 export const DEFAULT_VOICE = Object.freeze({ gender: 'female', rate: 1 });
@@ -46,6 +47,13 @@ export const TRACKING_OPTIONS = [
   { value: 'normal', label: 'Normal' },
   { value: '0.05em', label: 'Ampliado' },
   { value: '0.12em', label: 'Máximo' },
+];
+
+export const COLOR_VISION_OPTIONS = [
+  { value: 'normal', label: 'Padrão' },
+  { value: 'red-green', label: 'Protanopia ou deuteranopia (vermelho e verde)' },
+  { value: 'tritan', label: 'Tritanopia (azul e amarelo)' },
+  { value: 'mono', label: 'Monocromático (sem cores)' },
 ];
 
 export const VOICE_OPTIONS = [

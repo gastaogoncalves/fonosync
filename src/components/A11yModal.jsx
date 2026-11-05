@@ -6,6 +6,7 @@ import Switch from './Switch';
 import { useA11y } from '../hooks/useA11y';
 import {
   BACKGROUND_OPTIONS,
+  COLOR_VISION_OPTIONS,
   FONT_MAX,
   FONT_MIN,
   FONT_STEP,
@@ -271,6 +272,14 @@ export default function A11yModal({ isOpen, onClose }) {
             </p>
           )}
         </div>
+
+        <SelectField
+          id="a11y-daltonismo"
+          label="Modo de cor (daltonismo)"
+          value={draft.colorVision}
+          options={COLOR_VISION_OPTIONS}
+          onChange={(value) => updateDraft({ colorVision: value })}
+        />
 
         <div className="flex gap-2.5">
           <SelectField

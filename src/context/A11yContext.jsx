@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { A11yContext } from '../hooks/useA11y';
+import { clearReadingHighlight, collectPageText, highlightWordAt, splitPageText } from '../utils/readingHighlight';
 import {
   A11Y_STORAGE_KEY,
   BACKGROUND_OPTIONS,
+  COLOR_VISION_OPTIONS,
   DEFAULT_SETTINGS,
   DEFAULT_VOICE,
   FONT_MAX,
@@ -43,6 +45,7 @@ function loadPreferences() {
     if (TEXT_OPTIONS.some((option) => option.id === raw.textColor)) settings.textColor = raw.textColor;
     if (LEADING_OPTIONS.some((option) => option.value === raw.leading)) settings.leading = raw.leading;
     if (TRACKING_OPTIONS.some((option) => option.value === raw.tracking)) settings.tracking = raw.tracking;
+    if (COLOR_VISION_OPTIONS.some((option) => option.value === raw.colorVision)) settings.colorVision = raw.colorVision;
 
     const voice = {
       gender: VOICE_OPTIONS.some((option) => option.value === raw.voiceGender) ? raw.voiceGender : DEFAULT_VOICE.gender,
@@ -75,6 +78,7 @@ function applyToDocument(settings) {
   setAttr(root, 'data-contrast', settings.highContrast && 'high');
   setAttr(root, 'data-motion', settings.reduceMotion && 'reduce');
   setAttr(root, 'data-targets', settings.largeTargets && 'large');
+  setAttr(root, 'data-color-vision', settings.colorVision !== 'normal' && settings.colorVision);
 
   const leading = settings.leading !== 'normal' ? settings.leading : null;
   setAttr(root, 'data-leading', leading);
@@ -151,6 +155,9 @@ export function A11yProvider({ children }) {
   const chunksRef = useRef([]);
   const indexRef = useRef(0);
   const runRef = useRef(0); // invalida callbacks de falas antigas
+  const pageRef = useRef(null);
+  const startsRef = useRef([]);
+  const boundaryRef = useRef(false);
   const liveRef = useRef({ rate: speechRate, volume, gender: voiceGender, voices: [] });
 
   useEffect(() => {
@@ -208,6 +215,7 @@ export function A11yProvider({ children }) {
     const stopOnNavigate = () => {
       runRef.current += 1;
       synth.cancel();
+      clearReadingHighlight();
       setPlayerStatus('idle');
     };
 
@@ -219,8 +227,16 @@ export function A11yProvider({ children }) {
       synth.onvoiceschanged = null;
       window.removeEventListener('hashchange', stopOnNavigate);
       synth.cancel();
+      clearReadingHighlight();
     };
   }, []);
+
+  // Sem aviso de palavra da voz, o destaque acompanha o relógio
+  useEffect(() => {
+    if (playerStatus !== 'playing' || boundaryRef.current || !pageRef.current) return;
+    const said = position.elapsed * CHARS_PER_SECOND * liveRef.current.rate;
+    highlightWordAt(pageRef.current, startsRef.current[position.index] + Math.floor(said));
+  }, [position, playerStatus]);
 
   // Relógio do player enquanto fala
   useEffect(() => {
@@ -246,6 +262,7 @@ export function A11yProvider({ children }) {
 
     const chunks = chunksRef.current;
     if (index >= chunks.length) {
+      clearReadingHighlight();
       setPlayerStatus('done');
       return;
     }
@@ -255,11 +272,22 @@ export function A11yProvider({ children }) {
     setPlayerStatus('playing');
 
     const utterance = buildUtterance(chunks[index], overrides);
+    const page = pageRef.current;
+    if (page) {
+      highlightWordAt(page, startsRef.current[index]);
+      // algumas vozes avisam a palavra que estão falando; nas outras o destaque vai pelo relógio
+      utterance.onboundary = (event) => {
+        if (runRef.current !== runId || event.name !== 'word') return;
+        boundaryRef.current = true;
+        highlightWordAt(page, startsRef.current[index] + event.charIndex);
+      };
+    }
     utterance.onend = () => {
       if (runRef.current === runId) speakChunk(index + 1);
     };
     utterance.onerror = (event) => {
       if (runRef.current !== runId || event.error === 'canceled' || event.error === 'interrupted') return;
+      clearReadingHighlight();
       setPlayerStatus('idle');
     };
     window.speechSynthesis.speak(utterance);
@@ -272,8 +300,18 @@ export function A11yProvider({ children }) {
     }
 
     const root = document.querySelector('main') || document.body;
-    const text = (typeof customText === 'string' ? customText : root.innerText).slice(0, 8000);
-    const chunks = splitIntoChunks(text);
+    let chunks;
+    if (typeof customText === 'string') {
+      pageRef.current = null;
+      chunks = splitIntoChunks(customText.slice(0, 8000));
+    } else {
+      const page = collectPageText(root);
+      const parts = splitPageText(page.text);
+      pageRef.current = page;
+      startsRef.current = parts.map((part) => part.start);
+      chunks = parts.map((part) => part.text);
+    }
+    boundaryRef.current = false;
     if (chunks.length === 0) return;
 
     const lengths = chunks.map((chunk) => chunk.length);
@@ -303,6 +341,7 @@ export function A11yProvider({ children }) {
     runRef.current += 1;
     setPlayerStatus('idle');
     window.speechSynthesis.cancel();
+    clearReadingHighlight();
     window.speechSynthesis.speak(buildUtterance(text));
   };
 
@@ -322,6 +361,7 @@ export function A11yProvider({ children }) {
   function stopAudio() {
     runRef.current += 1;
     if (supportsSpeech()) window.speechSynthesis.cancel();
+    clearReadingHighlight();
     setPlayerStatus('idle');
   }
 

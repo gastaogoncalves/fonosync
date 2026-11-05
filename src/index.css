@@ -117,6 +117,72 @@
   min-height: 3.5rem;
 }
 
+/* Modos de cor para daltonismo */
+:root[data-color-vision="red-green"] {
+  --color-success: #0062a8;
+  --color-warning: #806300;
+  --color-danger: #c0400a;
+}
+
+:root[data-theme="dark"][data-color-vision="red-green"] {
+  --color-success: #5eaeea;
+  --color-warning: #d9b23e;
+  --color-danger: #f08a4b;
+}
+
+:root[data-color-vision="tritan"] {
+  --color-warning: #a8326e;
+  --color-danger: #b3261e;
+  --color-focus: #ff4f9a;
+  --color-accent: #ff7ab6;
+}
+
+:root[data-theme="dark"][data-color-vision="tritan"] {
+  --color-warning: #ef86b9;
+  --color-danger: #f07a80;
+}
+
+:root[data-color-vision="mono"] {
+  filter: grayscale(1);
+}
+
+/* verde, vermelho, amarelo e azul do Tailwind seguem as cores acima */
+:root[data-color-vision] {
+  --color-emerald-50: color-mix(in oklab, var(--color-success) 12%, var(--color-surface));
+  --color-emerald-100: color-mix(in oklab, var(--color-success) 18%, var(--color-surface));
+  --color-emerald-200: color-mix(in oklab, var(--color-success) 35%, var(--color-surface));
+  --color-emerald-300: color-mix(in oklab, var(--color-success) 50%, white);
+  --color-emerald-600: var(--color-success);
+  --color-emerald-700: color-mix(in oklab, var(--color-success) 80%, var(--color-ink));
+  --color-emerald-800: color-mix(in oklab, var(--color-success) 60%, var(--color-ink));
+  --color-emerald-900: color-mix(in oklab, var(--color-success) 45%, var(--color-ink));
+
+  --color-rose-50: color-mix(in oklab, var(--color-danger) 12%, var(--color-surface));
+  --color-rose-100: color-mix(in oklab, var(--color-danger) 18%, var(--color-surface));
+  --color-rose-200: color-mix(in oklab, var(--color-danger) 35%, var(--color-surface));
+  --color-rose-600: var(--color-danger);
+  --color-rose-700: color-mix(in oklab, var(--color-danger) 80%, var(--color-ink));
+  --color-rose-800: color-mix(in oklab, var(--color-danger) 60%, var(--color-ink));
+
+  --color-amber-50: color-mix(in oklab, var(--color-warning) 12%, var(--color-surface));
+  --color-amber-200: color-mix(in oklab, var(--color-warning) 35%, var(--color-surface));
+  --color-amber-500: var(--color-warning);
+  --color-amber-600: var(--color-warning);
+  --color-amber-800: color-mix(in oklab, var(--color-warning) 60%, var(--color-ink));
+  --color-amber-900: color-mix(in oklab, var(--color-warning) 45%, var(--color-ink));
+
+  --color-blue-50: color-mix(in oklab, var(--color-primary) 12%, var(--color-surface));
+  --color-blue-200: color-mix(in oklab, var(--color-primary) 35%, var(--color-surface));
+  --color-blue-800: color-mix(in oklab, var(--color-primary) 60%, var(--color-ink));
+  --color-blue-900: color-mix(in oklab, var(--color-primary) 45%, var(--color-ink));
+}
+
+:root[data-theme="dark"][data-color-vision] {
+  --color-emerald-600: color-mix(in oklab, var(--color-success) 75%, black);
+  --color-rose-600: color-mix(in oklab, var(--color-danger) 75%, black);
+  --color-amber-500: color-mix(in oklab, var(--color-warning) 75%, black);
+}
+
 @layer base {
   body {
     background-color: var(--color-surface);
@@ -135,6 +201,11 @@
   :focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
+  }
+  /* palavra que o "Ouvir página" está lendo */
+  ::highlight(fonosync-leitura) {
+    background-color: #ffe45c;
+    color: #172c3a;
   }
 }
 /* Modo escuro: controles nativos (select, barra de rolagem, calendário) */
