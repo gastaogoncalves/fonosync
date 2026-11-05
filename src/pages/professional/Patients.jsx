@@ -1,354 +1,546 @@
 import { useState } from 'react';
-import {
-  Accessibility,
-  Award,
-  Calendar,
-  CheckCircle2,
-  Gamepad2,
-  Home,
-  Lock,
-  LogOut,
-  Mail,
-  Phone,
-  Save,
-  Settings,
-  Sparkles,
-  User,
-} from 'lucide-react';
-import logoImg from '../../assets/images/ModeloA_Semnome.jpg';
-import A11yModal from "../../components/A11yModal";
-import Button from "../../components/Button";
-import Notice from "../../components/Notice";
-import StatusBadge from "../../components/StatusBadge";
-import { buttonClass } from "../../components/buttonStyles";
+import { Search, Filter, UserPlus, FileText, FolderArchive, ChevronRight, X, Save, CheckCircle2, RotateCcw } from 'lucide-react';
 
-const navItems = [
-  { id: 'inicio', label: 'Início', icon: Home },
-  { id: 'jogos', label: 'Meus Jogos', icon: Gamepad2 },
-  { id: 'consultas', label: 'Consultas', icon: Calendar },
-  { id: 'conquistas', label: 'Conquistas', icon: Award },
-  { id: 'configuracoes', label: 'Configurações', icon: Settings },
-];
+export default function Patients() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('todos'); // 'todos', 'acompanhamento', 'atencao', 'arquivados'
+  
+  // Estados para modais interativos
+  const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+  const [showRecordModal, setShowRecordModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [successNotice, setSuccessNotice] = useState(false);
 
-const pageInfo = {
-  inicio: { title: 'Olá, Maria Luiza! 👋', subtitle: 'Pronta para treinar suas missões de hoje?' },
-  jogos: { title: 'Jogos Terapêuticos Prescritos 🎮', subtitle: 'Exercícios divertidos recomendados pela Dra. Renata.' },
-  consultas: { title: 'Minhas Consultas e Agendamentos 📅', subtitle: 'Histórico e próximos horários confirmados.' },
-  conquistas: { title: 'Suas Conquistas e Prêmios 🏆', subtitle: 'Acompanhe seus selos por praticar os exercícios.' },
-  configuracoes: { title: 'Configurações do Perfil ⚙️', subtitle: 'Atualize seus dados pessoais e preferências.' },
-};
+  // Filtros avançados
+  const [filterAgeGroup, setFilterAgeGroup] = useState('todos');
 
-const initialExercises = [
-  { id: 'respiracao', title: 'Respiração diafragmática', minutes: 4, done: true },
-  { id: 'r-medial', title: 'Palavras com /r/ medial', minutes: 6, done: true },
-  { id: 'leitura', title: 'Leitura ritmada', minutes: 8, done: false },
-  { id: 'fala', title: 'Fala espontânea', minutes: 4, done: false },
-];
+  // Formulário de novo paciente
+  const [newPatientName, setNewPatientName] = useState('');
+  const [newPatientAge, setNewPatientAge] = useState('');
+  const [newPatientPhone, setNewPatientPhone] = useState('');
 
-const POINTS_PER_EXERCISE = 10;
-const cardClass = 'rounded-xl border border-line bg-surface shadow-sm';
+  // Lista de pacientes ativos e arquivados
+  const [patients, setPatients] = useState([
+    {
+      id: 1,
+      name: 'Maria Luiza Ferreira',
+      age: 8,
+      lastSession: 'Hoje, 09:00',
+      professional: 'Dra. Renata Lima',
+      status: 'Em acompanhamento',
+      statusType: 'acompanhamento',
+      phone: '(11) 98888-1111',
+      notes: 'Evolução estável na fluência e fonética.',
+      archived: false,
+    },
+    {
+      id: 2,
+      name: 'João Pedro Santos',
+      age: 6,
+      lastSession: '30 set, 16:30',
+      professional: 'Dra. Renata Lima',
+      status: 'Em acompanhamento',
+      statusType: 'acompanhamento',
+      phone: '(11) 97777-2222',
+      notes: 'Boa aderência aos exercícios domiciliares.',
+      archived: false,
+    },
+    {
+      id: 3,
+      name: 'Ana Clara Souza',
+      age: 10,
+      lastSession: '28 set, 14:00',
+      professional: 'Dra. Renata Lima',
+      status: 'Atenção',
+      statusType: 'atencao',
+      phone: '(11) 96666-3333',
+      notes: 'Apresentou oscilação na taxa de fluência.',
+      archived: false,
+    },
+    {
+      id: 4,
+      name: 'Lucas Ribeiro',
+      age: 4,
+      lastSession: '25 set, 11:00',
+      professional: 'Dra. Renata Lima',
+      status: 'Pausado',
+      statusType: 'pausado',
+      phone: '(11) 95555-4444',
+      notes: 'Tratamento pausado temporariamente a pedido dos responsáveis.',
+      archived: false,
+    },
+    {
+      id: 5,
+      name: 'Beatriz Costa',
+      age: 9,
+      lastSession: '15 Ago, 10:00',
+      professional: 'Dra. Renata Lima',
+      status: 'Arquivado',
+      statusType: 'arquivado',
+      phone: '(11) 94444-5555',
+      notes: 'Alta terapêutica concluída com sucesso.',
+      archived: true,
+    },
+  ]);
 
-function Field({ id, label, icon: Icon, ...props }) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-bold uppercase text-navy">
-        {label}
-      </label>
-      <div className="flex items-center gap-2 rounded-md border border-line bg-surface p-3 text-sm focus-within:outline-3 focus-within:outline-focus">
-        {Icon && <Icon size={16} className="shrink-0 text-muted" aria-hidden="true" />}
-        <input id={id} className="w-full bg-transparent font-semibold text-ink outline-none" {...props} />
-      </div>
-    </div>
-  );
-}
+  // Filtragem principal
+  const filteredPatients = patients.filter((patient) => {
+    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Aba Arquivados
+    if (activeTab === 'arquivados') {
+      return matchesSearch && patient.archived;
+    }
 
-function NextAppointment({ confirmed, onConfirm }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-mist p-4">
-        <div>
-          <p className="text-sm font-bold text-ink">Segunda-feira, 09:00</p>
-          <p className="text-xs text-muted">Com Dra. Renata Lima · Presencial</p>
-        </div>
-        <StatusBadge tone={confirmed ? 'success' : 'warning'}>{confirmed ? 'Confirmada' : 'A confirmar'}</StatusBadge>
-      </div>
-      {!confirmed && (
-        <Button variant="primary" onClick={onConfirm}>
-          <CheckCircle2 size={16} aria-hidden="true" /> Confirmar presença
-        </Button>
-      )}
-    </div>
-  );
-}
+    // Se não estiver na aba de arquivados, ignora os arquivados na listagem padrão
+    if (patient.archived) return false;
 
-export default function PatientDashboard() {
-  const [activeTab, setActiveTab] = useState('inicio');
-  const [showA11y, setShowA11y] = useState(false);
-  const [exercises, setExercises] = useState(initialExercises);
-  const [points, setPoints] = useState(120);
-  const [appointmentConfirmed, setAppointmentConfirmed] = useState(false);
+    // Abas de Status Ativo
+    if (activeTab === 'acompanhamento' && patient.statusType !== 'acompanhamento') return false;
+    if (activeTab === 'atencao' && patient.statusType !== 'atencao') return false;
 
-  const [patientData, setPatientData] = useState({
-    name: 'Maria Luiza Ferreira',
-    age: '8 anos',
-    responsible: 'Clara Ferreira (Mãe)',
-    phone: '(11) 98765-4321',
-    email: 'clara.ferreira@email.com',
+    // Filtro de Faixa Etária
+    if (filterAgeGroup === 'crianca' && patient.age >= 8) return false;
+    if (filterAgeGroup === 'pre-adolescente' && (patient.age < 8 || patient.age > 12)) return false;
+
+    return matchesSearch;
   });
-  const [savedNotice, setSavedNotice] = useState(false);
 
-  const doneCount = exercises.filter((exercise) => exercise.done).length;
-  const allDone = doneCount === exercises.length;
-
-  const toggleExercise = (id) => {
-    const target = exercises.find((exercise) => exercise.id === id);
-    setExercises((list) => list.map((exercise) => (exercise.id === id ? { ...exercise, done: !exercise.done } : exercise)));
-    setPoints((value) => value + (target.done ? -POINTS_PER_EXERCISE : POINTS_PER_EXERCISE));
+  const handleOpenRecord = (patient) => {
+    setSelectedPatient(patient);
+    setShowRecordModal(true);
   };
 
-  const handleSaveSettings = (e) => {
+  const handleToggleArchive = (patientId, e) => {
+    e.stopPropagation();
+    setPatients(patients.map(p => {
+      if (p.id === patientId) {
+        const nextArchived = !p.archived;
+        return { 
+          ...p, 
+          archived: nextArchived, 
+          status: nextArchived ? 'Arquivado' : 'Em acompanhamento',
+          statusType: nextArchived ? 'arquivado' : 'acompanhamento'
+        };
+      }
+      return p;
+    }));
+    setShowRecordModal(false);
+  };
+
+  const handleCreatePatient = (e) => {
     e.preventDefault();
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+    if (!newPatientName.trim()) return;
+
+    const newEntry = {
+      id: patients.length + 1,
+      name: newPatientName,
+      age: newPatientAge ? Number(newPatientAge) : 7,
+      lastSession: 'Recém-cadastrado',
+      professional: 'Dra. Renata Lima',
+      status: 'Em acompanhamento',
+      statusType: 'acompanhamento',
+      phone: newPatientPhone || 'Não informado',
+      notes: 'Prontuário criado recentemente.',
+      archived: false,
+    };
+
+    setPatients([newEntry, ...patients]);
+    setNewPatientName('');
+    setNewPatientAge('');
+    setNewPatientPhone('');
+    setShowNewPatientModal(false);
+    
+    setSuccessNotice(true);
+    setTimeout(() => setSuccessNotice(false), 3000);
   };
 
-  const handleLogout = () => {
-    window.location.hash = '#/';
-  };
-
-  const info = pageInfo[activeTab];
-  const bind = (field) => ({
-    value: patientData[field],
-    onChange: (e) => setPatientData({ ...patientData, [field]: e.target.value }),
-  });
-
-  const badges = [
-    { id: 'triagem', emoji: '🌟', title: 'Primeira Triagem', text: 'Concluiu o primeiro teste de fala.', earned: true },
-    { id: 'sequencia', emoji: '🔥', title: '7 Dias Seguidos', text: 'Treinou a articulação a semana toda!', earned: true },
-    { id: 'treino', emoji: '🏅', title: 'Treino do dia completo', text: 'Conclua os 4 exercícios do dia.', earned: allDone },
-  ];
+  const activePatientsCount = patients.filter(p => !p.archived).length;
+  const archivedPatientsCount = patients.filter(p => p.archived).length;
 
   return (
-    <div className="flex min-h-screen bg-canvas font-sans">
-      <aside className="flex w-64 shrink-0 flex-col justify-between bg-band p-5 text-white">
+    <div className="space-y-6 font-sans">
+      
+      {/* Cabeçalho da Seção */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="mb-8 flex items-center gap-3">
-            <img src={logoImg} alt="FonoSync Logo" className="h-9 w-auto rounded bg-white object-contain p-0.5" />
-            <span className="font-serif text-xl font-bold text-white">FonoSync</span>
+          <h2 className="text-2xl font-bold font-serif text-[#172C3A] flex items-center gap-2">
+            Gestão de Pacientes 👥
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">Cadastre, busque e gerencie os prontuários ativos e arquivados.</p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="px-4 py-2 bg-white border border-slate-300 text-[#172C3A] text-xs font-bold rounded-xl flex items-center gap-2 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-[#0284C7]" /> {activePatientsCount} Pacientes Ativos
+          </div>
+        </div>
+      </div>
+
+      {/* Alerta de Sucesso */}
+      {successNotice && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 flex items-center gap-3 text-xs shadow-sm">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span className="font-bold text-emerald-950">Paciente cadastrado com sucesso! Prontuário gerado.</span>
+        </div>
+      )}
+
+      {/* Barra de Pesquisa e Botões de Ação */}
+      <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+              type="text"
+              placeholder="Nome, responsável ou telefone"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-[#172C3A] font-medium focus:outline-none focus:ring-2 focus:ring-[#0284C7]"
+            />
           </div>
 
-          <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-wider text-on-band-muted">Área do paciente</p>
-
-          <nav aria-label="Áreas do paciente" className="flex flex-col gap-1">
-            {navItems.map(({ id, label, icon: Icon }) => {
-              const isActive = activeTab === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setActiveTab(id)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-r-md border-l-4 px-3 text-left text-sm font-bold transition-colors ${
-                    isActive
-                      ? 'border-accent bg-white/10 text-white'
-                      : 'border-transparent text-on-band-muted hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  <Icon size={18} className="shrink-0 text-accent" aria-hidden="true" />
-                  {label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
-        <div className="space-y-3 border-t border-white/15 pt-6">
-          <button
-            type="button"
-            onClick={() => setShowA11y(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-white/30 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
-          >
-            <Accessibility size={16} aria-hidden="true" /> Acessibilidade
-          </button>
-
-          <div className="flex items-center gap-3 rounded-md border border-white/15 bg-white/10 p-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-primary font-serif text-sm font-bold text-on-primary">
-              ML
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-white">{patientData.name}</p>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-on-band-muted">
-                <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" /> Ativo
-              </span>
-            </div>
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <button
               type="button"
-              onClick={handleLogout}
-              aria-label="Sair para a página inicial"
-              title="Sair para a página inicial"
-              className="rounded p-1 text-on-band-muted hover:text-white"
+              onClick={() => setShowFilterModal(true)}
+              className="px-4 py-2.5 bg-white border border-slate-300 text-[#172C3A] text-xs font-bold rounded-xl flex items-center gap-2 hover:bg-slate-50 shadow-sm cursor-pointer"
             >
-              <LogOut size={16} aria-hidden="true" />
+              <Filter size={15} /> Filtros {filterAgeGroup !== 'todos' && '(Ativo)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowNewPatientModal(true)}
+              className="px-4 py-2.5 bg-[#0284C7] text-white text-xs font-bold rounded-xl flex items-center gap-2 hover:bg-sky-700 shadow-sm cursor-pointer"
+            >
+              <UserPlus size={15} /> Novo cadastro
             </button>
           </div>
         </div>
-      </aside>
 
-      <main className="flex-1 space-y-6 overflow-y-auto p-8">
-        <header className="flex items-center justify-between border-b border-line pb-4">
-          <div>
-            <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
-            <p className="text-sm text-muted">{info.subtitle}</p>
+        {/* Abas de Filtro de Status Interativas */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('todos')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'todos' 
+                  ? 'bg-[#172C3A] text-white shadow-sm' 
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Todos Ativos
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('acompanhamento')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'acompanhamento' 
+                  ? 'bg-emerald-700 text-white shadow-sm' 
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+              }`}
+            >
+              Em acompanhamento
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('atencao')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'atencao' 
+                  ? 'bg-amber-600 text-white shadow-sm' 
+                  : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+              }`}
+            >
+              Atenção
+            </button>
           </div>
-          <div className="flex items-center gap-2 rounded-md border border-warning bg-warning/10 px-4 py-2">
-            <Sparkles className="text-warning" size={18} aria-hidden="true" />
-            <span className="text-xs font-bold text-navy">{points} Pontos acumulados</span>
-          </div>
-        </header>
 
-        {activeTab === 'inicio' && (
-          <section className="grid gap-6 md:grid-cols-2">
-            <div className={`${cardClass} space-y-4 p-6`}>
-              <h2 className="font-serif text-lg font-bold text-navy">Sua Próxima Consulta</h2>
-              <NextAppointment confirmed={appointmentConfirmed} onConfirm={() => setAppointmentConfirmed(true)} />
-            </div>
+          <button
+            type="button"
+            onClick={() => setActiveTab(activeTab === 'arquivados' ? 'todos' : 'arquivados')}
+            className={`text-xs font-bold flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border transition-all cursor-pointer ${
+              activeTab === 'arquivados'
+                ? 'bg-slate-800 text-white border-slate-800 shadow-sm'
+                : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <FolderArchive size={14} /> Ver Arquivados ({archivedPatientsCount})
+          </button>
+        </div>
+      </div>
 
-            <div className={`${cardClass} space-y-4 p-6`}>
-              <div className="flex items-end justify-between gap-3">
-                <h2 className="font-serif text-lg font-bold text-navy">Exercícios do dia</h2>
-                <span className="text-sm text-muted">{doneCount} de {exercises.length} concluídos</span>
-              </div>
+      {/* Tabela de Prontuários */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3.5 px-6">Paciente</th>
+                <th className="py-3.5 px-4">Idade</th>
+                <th className="py-3.5 px-4">Última Sessão</th>
+                <th className="py-3.5 px-4">Profissional</th>
+                <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-6 text-right">Ação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs text-[#172C3A]">
+              {filteredPatients.length > 0 ? (
+                filteredPatients.map((patient) => (
+                  <tr key={patient.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-4 px-6 font-bold flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border shrink-0 ${
+                        patient.archived ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-sky-100 text-[#0284C7] border-sky-200'
+                      }`}>
+                        {patient.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      {patient.name}
+                    </td>
+                    <td className="py-4 px-4 text-slate-600">{patient.age} anos</td>
+                    <td className="py-4 px-4 text-slate-600">{patient.lastSession}</td>
+                    <td className="py-4 px-4 text-slate-600">{patient.professional}</td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                        patient.statusType === 'acompanhamento' ? 'bg-emerald-50 text-emerald-800' :
+                        patient.statusType === 'atencao' ? 'bg-amber-50 text-amber-800' : 
+                        patient.statusType === 'arquivados' || patient.archived ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
+                      }`}>
+                        {patient.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenRecord(patient)}
+                        className="text-[#0284C7] hover:underline font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        {patient.archived ? 'Restaurar / Ver' : 'Abrir Prontuário'} <ChevronRight size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-slate-400">
+                    Nenhum paciente encontrado nesta categoria.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-              <div
-                role="progressbar"
-                aria-label="Exercícios concluídos"
-                aria-valuemin={0}
-                aria-valuemax={exercises.length}
-                aria-valuenow={doneCount}
-                className="h-2 w-full overflow-hidden rounded-full bg-line"
+      {/* MODAL: FILTROS AVANÇADOS */}
+      {showFilterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-lg font-bold font-serif text-[#172C3A]">Filtrar Pacientes</h3>
+              <button 
+                type="button" 
+                onClick={() => setShowFilterModal(false)}
+                className="text-slate-400 hover:text-slate-700 p-1"
               >
-                <div className="h-full bg-success transition-all" style={{ width: `${(doneCount / exercises.length) * 100}%` }} />
-              </div>
+                <X size={18} />
+              </button>
+            </div>
 
-              <ul className="flex flex-col divide-y divide-line">
-                {exercises.map((exercise) => (
-                  <li key={exercise.id} className="flex items-center justify-between gap-3">
-                    <label className="flex min-h-11 flex-1 cursor-pointer items-center gap-3 text-sm text-ink">
-                      <input
-                        type="checkbox"
-                        checked={exercise.done}
-                        onChange={() => toggleExercise(exercise.id)}
-                        className="size-5 accent-primary"
-                      />
-                      <span className={exercise.done ? 'text-muted line-through' : ''}>{exercise.title}</span>
-                    </label>
-                    <span className="text-xs text-muted">{exercise.minutes} min</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div role="status">
-                {allDone && (
-                  <Notice tone="success" title="Treino do dia completo">
-                    Você ganhou um selo novo em Conquistas.
-                  </Notice>
-                )}
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold mb-1.5 text-slate-700">Faixa Etária</label>
+                <select
+                  value={filterAgeGroup}
+                  onChange={(e) => setFilterAgeGroup(e.target.value)}
+                  className="w-full p-2.5 border border-slate-300 rounded-xl font-medium bg-white cursor-pointer"
+                >
+                  <option value="todos">Todas as idades</option>
+                  <option value="crianca">Até 7 anos (Crianças)</option>
+                  <option value="pre-adolescente">8 a 12 anos</option>
+                </select>
               </div>
             </div>
-          </section>
-        )}
 
-        {activeTab === 'jogos' && (
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className={`${cardClass} space-y-3 p-5`}>
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-xl" aria-hidden="true">🎯</div>
-              <h3 className="font-bold text-navy">Caça-Sons: Fonema /r/</h3>
-              <p className="text-xs text-muted">Identifique palavras com o som vibrante.</p>
-              <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
+            <div className="pt-3 flex gap-2 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterAgeGroup('todos');
+                  setShowFilterModal(false);
+                }}
+                className="flex-1 py-2 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+              >
+                Limpar Filtros
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFilterModal(false)}
+                className="flex-1 py-2 bg-[#0284C7] text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm cursor-pointer"
+              >
+                Aplicar Filtro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: NOVO CADASTRO DE PACIENTE */}
+      {showNewPatientModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-lg font-bold font-serif text-[#172C3A]">Cadastrar Novo Paciente</h3>
+              <button 
+                type="button" 
+                onClick={() => setShowNewPatientModal(false)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <div className={`${cardClass} space-y-3 p-5`}>
-              <div className="flex size-12 items-center justify-center rounded-xl bg-warning/10 text-xl" aria-hidden="true">🧩</div>
-              <h3 className="font-bold text-navy">Jogo da Rima</h3>
-              <p className="text-xs text-muted">Combine pares de palavras com terminação igual.</p>
-              <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
-            </div>
-          </section>
-        )}
+            <form onSubmit={handleCreatePatient} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold mb-1 text-slate-700">Nome Completo do Paciente *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Carlos Eduardo Lima"
+                  value={newPatientName}
+                  onChange={(e) => setNewPatientName(e.target.value)}
+                  className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                />
+              </div>
 
-        {activeTab === 'consultas' && (
-          <section className="space-y-6">
-            <div className={`${cardClass} space-y-4 p-6`}>
-              <h2 className="font-serif text-lg font-bold text-navy">Próxima consulta</h2>
-              <NextAppointment confirmed={appointmentConfirmed} onConfirm={() => setAppointmentConfirmed(true)} />
-            </div>
-
-            <div className={`${cardClass} space-y-4 p-6`}>
-              <h2 className="font-serif text-lg font-bold text-navy">Histórico de Atendimentos</h2>
-              <div className="flex items-center justify-between gap-3 rounded-xl bg-mist p-4 text-sm">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="font-bold text-navy">Sessão de Avaliação Fonética</p>
-                  <p className="text-xs text-muted">04 de Novembro de 2026 - Dra. Renata Lima</p>
+                  <label className="block font-bold mb-1 text-slate-700">Idade (anos)</label>
+                  <input
+                    type="number"
+                    placeholder="Ex: 7"
+                    value={newPatientAge}
+                    onChange={(e) => setNewPatientAge(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                  />
                 </div>
-                <StatusBadge tone="success">Realizada</StatusBadge>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {activeTab === 'conquistas' && (
-          <section className="grid gap-4 sm:grid-cols-3">
-            {badges.map((badge) => (
-              <div key={badge.id} className={`${cardClass} space-y-2 p-5 text-center ${badge.earned ? '' : 'opacity-70'}`}>
-                <span className={`text-4xl ${badge.earned ? '' : 'grayscale'}`} aria-hidden="true">{badge.emoji}</span>
-                <h3 className="text-sm font-bold text-navy">{badge.title}</h3>
-                <p className="text-xs text-muted">{badge.text}</p>
-                {badge.earned ? (
-                  <StatusBadge tone="success">Conquistada</StatusBadge>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-muted">
-                    <Lock size={14} aria-hidden="true" /> Bloqueada
-                  </span>
-                )}
-              </div>
-            ))}
-          </section>
-        )}
-
-        {activeTab === 'configuracoes' && (
-          <section className={`${cardClass} max-w-2xl p-6`}>
-            <form onSubmit={handleSaveSettings} className="space-y-4">
-              <Field id="pac-nome" label="Nome do Paciente" icon={User} type="text" {...bind('name')} />
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="pac-idade" label="Idade" type="text" {...bind('age')} />
-                <Field id="pac-responsavel" label="Responsável Legal" type="text" {...bind('responsible')} />
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">Telefone / Contato</label>
+                  <input
+                    type="text"
+                    placeholder="(11) 99999-9999"
+                    value={newPatientPhone}
+                    onChange={(e) => setNewPatientPhone(e.target.value)}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="pac-telefone" label="Telefone / WhatsApp" icon={Phone} type="text" {...bind('phone')} />
-                <Field id="pac-email" label="E-mail de Contato" icon={Mail} type="email" {...bind('email')} />
-              </div>
-
-              <div className="flex items-center justify-between border-t border-line pt-4">
-                <span role="status" className="flex items-center gap-1 text-xs font-bold text-success">
-                  {savedNotice && (
-                    <>
-                      <CheckCircle2 size={16} aria-hidden="true" /> Dados atualizados com sucesso!
-                    </>
-                  )}
-                </span>
-
-                <Button variant="primary" type="submit">
-                  <Save size={16} aria-hidden="true" /> Salvar alterações
-                </Button>
+              <div className="pt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNewPatientModal(false)}
+                  className="flex-1 py-2.5 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Save size={15} /> Salvar Prontuário
+                </button>
               </div>
             </form>
-          </section>
-        )}
-      </main>
+          </div>
+        </div>
+      )}
 
-      <A11yModal isOpen={showA11y} onClose={() => setShowA11y(false)} />
+      {/* MODAL: ABRIR PRONTUÁRIO / GERIR ARQUIVAMENTO */}
+      {showRecordModal && selectedPatient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-sky-100 text-[#0284C7] font-bold text-sm flex items-center justify-center border border-sky-200">
+                  {selectedPatient.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold font-serif text-[#172C3A]">{selectedPatient.name}</h3>
+                  <p className="text-xs text-slate-500">{selectedPatient.archived ? 'Prontuário Arquivado' : 'Prontuário Clínico Ativo'}</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowRecordModal(false)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div>
+                  <span className="text-slate-500 block font-bold">Idade:</span>
+                  <span className="font-semibold text-slate-800">{selectedPatient.age} anos</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block font-bold">Contato:</span>
+                  <span className="font-semibold text-slate-800">{selectedPatient.phone}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block font-bold">Profissional Responsável:</span>
+                  <span className="font-semibold text-slate-800">{selectedPatient.professional}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block font-bold">Status Clínico:</span>
+                  <span className="font-semibold text-emerald-700">{selectedPatient.status}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Notas e Observações da Sessão:</label>
+                <div className="p-3 bg-sky-50/60 rounded-xl border border-sky-200 text-sky-950 font-medium">
+                  {selectedPatient.notes}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={(e) => handleToggleArchive(selectedPatient.id, e)}
+                className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                  selectedPatient.archived 
+                    ? 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100' 
+                    : 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100'
+                }`}
+              >
+                {selectedPatient.archived ? <RotateCcw size={14} /> : <FolderArchive size={14} />}
+                {selectedPatient.archived ? 'Restaurar Paciente' : 'Arquivar Prontuário'}
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => alert(`A Gerar relatório em PDF para ${selectedPatient.name}...`)}
+                  className="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer text-xs"
+                >
+                  <FileText size={15} /> Exportar Relatório
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRecordModal(false)}
+                  className="px-5 py-2 bg-[#0284C7] text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm cursor-pointer text-xs"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
