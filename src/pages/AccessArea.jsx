@@ -62,7 +62,7 @@ export default function AccessArea() {
   const [notice, setNotice] = useState(null);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showA11y, setShowA11y] = useState(false);
-  const { isPlaying, speakPageContent, stopSpeaking } = useA11y();
+  const { isPlayerOpen, speakPageContent, stopSpeaking } = useA11y();
 
   const isPro = userType === 'profissional';
 
@@ -134,13 +134,13 @@ export default function AccessArea() {
             </button>
             <button
               type="button"
-              onClick={() => (isPlaying ? stopSpeaking() : speakPageContent())}
+              onClick={() => (isPlayerOpen ? stopSpeaking() : speakPageContent())}
               className={`flex min-h-11 items-center gap-1.5 rounded-lg border px-3.5 text-xs font-bold ${
-                isPlaying ? 'border-danger bg-danger text-on-primary' : 'border-line text-navy hover:bg-mist'
+                isPlayerOpen ? 'border-danger bg-danger text-on-primary' : 'border-line text-navy hover:bg-mist'
               }`}
             >
-              {isPlaying ? <VolumeX size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
-              {isPlaying ? 'Parar leitura' : 'Ouvir página'}
+              {isPlayerOpen ? <VolumeX size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
+              {isPlayerOpen ? 'Parar leitura' : 'Ouvir página'}
             </button>
           </div>
         </div>

@@ -96,6 +96,9 @@ function applyToDocument(settings) {
   setVar(root, '--a11y-text', textHex);
 }
 
+// média de caracteres falados por segundo na velocidade 1x
+const CHARS_PER_SECOND = 14;
+
 const supportsSpeech = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
 function splitIntoChunks(text) {
@@ -137,16 +140,23 @@ export function A11yProvider({ children }) {
   const [availableVoices, setAvailableVoices] = useState([]);
 
   const [playerStatus, setPlayerStatus] = useState('idle');
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [pageTitle, setPageTitle] = useState('');
+  const [volume, setVolumeState] = useState(1);
+  const [spokenChars, setSpokenChars] = useState(0);
+  const [totalChars, setTotalChars] = useState(0);
 
+  const runRef = useRef(0);
+  const chunkStartRef = useRef(0);
   const chunksRef = useRef([]);
   const startsRef = useRef([]);
   const pageRef = useRef(null);
   const indexRef = useRef(0);
-  const liveRef = useRef({ rate: speechRate, gender: voiceGender, voices: [] });
+  const liveRef = useRef({ rate: speechRate, gender: voiceGender, voices: [], volume: 1 });
 
   useEffect(() => {
-    liveRef.current = { rate: speechRate, gender: voiceGender, voices: availableVoices };
-  }, [speechRate, voiceGender, availableVoices]);
+    liveRef.current = { rate: speechRate, gender: voiceGender, voices: availableVoices, volume };
+  }, [speechRate, voiceGender, availableVoices, volume]);
 
   useLayoutEffect(() => {
     applyToDocument(settings);
@@ -205,9 +215,11 @@ export function A11yProvider({ children }) {
     }
 
     const stopOnNavigate = () => {
+      runRef.current += 1;
       synth.cancel();
       clearReadingHighlight();
       setPlayerStatus('idle');
+      setPlayerOpen(false);
     };
 
     window.addEventListener('hashchange', stopOnNavigate);
@@ -220,47 +232,58 @@ export function A11yProvider({ children }) {
     };
   }, []);
 
-  const speakNextChunk = () => {
+  const charsBefore = (index) => chunksRef.current.slice(0, index).reduce((sum, chunk) => sum + chunk.length, 0);
+
+  const speakChunk = (index) => {
     if (!supportsSpeech()) return;
     const synth = window.speechSynthesis;
+    runRef.current += 1;
+    const runId = runRef.current;
+    synth.cancel();
 
-    if (indexRef.current >= chunksRef.current.length) {
+    if (index >= chunksRef.current.length) {
       clearReadingHighlight();
+      setSpokenChars(0);
       setPlayerStatus('done');
       return;
     }
 
-    const textChunk = chunksRef.current[indexRef.current];
     const live = liveRef.current;
-    const utterance = new SpeechSynthesisUtterance(textChunk);
-
+    const utterance = new SpeechSynthesisUtterance(chunksRef.current[index]);
     const { voice, pitch } = resolveVoice(live.voices, live.gender);
     if (voice) utterance.voice = voice;
     utterance.lang = 'pt-BR';
     utterance.pitch = pitch;
     utterance.rate = live.rate;
-    utterance.volume = 1.0;
+    utterance.volume = live.volume;
 
     const page = pageRef.current;
-    const start = startsRef.current[indexRef.current];
+    const start = startsRef.current[index];
     if (page) {
       highlightWordAt(page, start);
       utterance.onboundary = (event) => {
-        if (event.name === 'word') highlightWordAt(page, start + event.charIndex);
+        if (runRef.current === runId && event.name === 'word') highlightWordAt(page, start + event.charIndex);
       };
     }
 
-    utterance.onend = () => {
-      indexRef.current += 1;
-      speakNextChunk();
+    utterance.onstart = () => {
+      chunkStartRef.current = Date.now();
     };
-
+    // o cancel() também dispara onend e onerror, então falas antigas são ignoradas
+    utterance.onend = () => {
+      if (runRef.current === runId) speakChunk(index + 1);
+    };
     utterance.onerror = () => {
+      if (runRef.current !== runId) return;
       clearReadingHighlight();
       setPlayerStatus('idle');
     };
 
+    indexRef.current = index;
+    chunkStartRef.current = 0;
+    setSpokenChars(charsBefore(index));
     setPlayerStatus('playing');
+    synth.resume();
     synth.speak(utterance);
   };
 
@@ -269,9 +292,6 @@ export function A11yProvider({ children }) {
       alert('Seu navegador não suporta leitura por síntese de voz.');
       return;
     }
-
-    const synth = window.speechSynthesis;
-    synth.cancel();
 
     let chunks;
     if (typeof customText === 'string') {
@@ -283,32 +303,58 @@ export function A11yProvider({ children }) {
       pageRef.current = page;
       startsRef.current = parts.map((part) => part.start);
       chunks = parts.map((part) => part.text);
+      const heading = document.querySelector('main h1') || document.querySelector('h1');
+      setPageTitle(heading?.innerText.trim() || document.title);
+      setPlayerOpen(true);
     }
     if (chunks.length === 0) return;
 
     chunksRef.current = chunks;
-    indexRef.current = 0;
+    setTotalChars(chunks.reduce((sum, chunk) => sum + chunk.length, 0));
+    speakChunk(0);
+  };
 
-    // o navegador precisa de um instante depois do cancel()
-    setTimeout(() => {
-      synth.resume();
-      speakNextChunk();
-    }, 100);
+  function stopAudio() {
+    runRef.current += 1;
+    if (supportsSpeech()) window.speechSynthesis.cancel();
+    clearReadingHighlight();
+    setSpokenChars(0);
+    setPlayerStatus('idle');
+  }
+
+  const closePlayer = () => {
+    stopAudio();
+    setPlayerOpen(false);
   };
 
   const speakPageContent = (customText) => {
-    if (playerStatus === 'playing' && typeof customText !== 'string') {
-      stopAudio();
+    if (playerOpen && typeof customText !== 'string') {
+      closePlayer();
       return;
     }
     startReading(customText);
   };
 
+  const playAudio = () => {
+    if (playerStatus === 'paused') speakChunk(indexRef.current);
+    else if (playerStatus !== 'playing') startReading();
+  };
+
+  // pausar para a frase atual; ao continuar, ela recomeça do início
+  const pauseAudio = () => {
+    if (playerStatus !== 'playing') return;
+    runRef.current += 1;
+    window.speechSynthesis.cancel();
+    setPlayerStatus('paused');
+  };
+
   const speakText = (text) => {
     if (!supportsSpeech()) return;
     const synth = window.speechSynthesis;
+    runRef.current += 1;
     synth.cancel();
     clearReadingHighlight();
+    setPlayerStatus('idle');
     synth.resume();
 
     const live = liveRef.current;
@@ -318,28 +364,45 @@ export function A11yProvider({ children }) {
     utterance.lang = 'pt-BR';
     utterance.pitch = pitch;
     utterance.rate = live.rate;
-    utterance.volume = 1.0;
+    utterance.volume = live.volume;
 
     synth.speak(utterance);
   };
 
-  function stopAudio() {
-    if (supportsSpeech()) {
-      window.speechSynthesis.cancel();
-    }
-    clearReadingHighlight();
-    setPlayerStatus('idle');
-  }
+  // tempo do player, estimado pela quantidade de texto
+  useEffect(() => {
+    if (playerStatus !== 'playing') return undefined;
+    const timer = setInterval(() => {
+      const index = indexRef.current;
+      const chunk = chunksRef.current[index] || '';
+      if (!chunkStartRef.current) return;
+      const seconds = (Date.now() - chunkStartRef.current) / 1000;
+      const said = Math.min(chunk.length, seconds * CHARS_PER_SECOND * liveRef.current.rate);
+      setSpokenChars(charsBefore(index) + said);
+    }, 250);
+    return () => clearInterval(timer);
+  }, [playerStatus]);
+
+  // mudar voz, velocidade ou volume recomeça a frase atual com o novo valor
+  const applyLive = (patch) => {
+    liveRef.current = { ...liveRef.current, ...patch };
+    if (playerStatus === 'playing') speakChunk(indexRef.current);
+  };
 
   const setSpeed = (value) => {
     const rate = roundRate(Math.min(SPEECH_RATE_MAX, Math.max(SPEECH_RATE_MIN, Number(value))));
     setSpeechRate(rate);
-    liveRef.current = { ...liveRef.current, rate };
+    applyLive({ rate });
+  };
+
+  const setVolume = (value) => {
+    setVolumeState(value);
+    applyLive({ volume: value });
   };
 
   const changeVoiceGender = (gender) => {
     setVoiceGender(gender);
-    liveRef.current = { ...liveRef.current, gender };
+    applyLive({ gender });
   };
 
   const resolved = resolveVoice(availableVoices, voiceGender);
@@ -361,10 +424,22 @@ export function A11yProvider({ children }) {
         speechSupported: supportsSpeech(),
         voiceInfo,
         isPlaying: playerStatus === 'playing',
+        isPlayerOpen: playerOpen,
         playerStatus,
+        pageTitle,
+        volume,
+        setVolume,
+        elapsed: spokenChars / (CHARS_PER_SECOND * speechRate),
+        duration: totalChars / (CHARS_PER_SECOND * speechRate),
+        progress: totalChars ? spokenChars / totalChars : 0,
         speakPageContent,
         speakText,
-        stopSpeaking: stopAudio,
+        playAudio,
+        pauseAudio,
+        stopAudio,
+        restartAudio: () => startReading(),
+        closePlayer,
+        stopSpeaking: closePlayer,
       }}
     >
       {children}

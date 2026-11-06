@@ -140,7 +140,7 @@ export default function TriagemGame() {
   const [history, setHistory] = useState([]);
   const [downloaded, setDownloaded] = useState(false);
   const [showA11y, setShowA11y] = useState(false);
-  const { isPlaying, speakPageContent, stopSpeaking, speakText } = useA11y();
+  const { isPlayerOpen, speakPageContent, stopSpeaking, speakText } = useA11y();
 
   const total = words.length;
   const currentWord = words[wordIndex];
@@ -244,12 +244,12 @@ export default function TriagemGame() {
           </button>
           <button
             type="button"
-            onClick={() => (isPlaying ? stopSpeaking() : speakPageContent())}
+            onClick={() => (isPlayerOpen ? stopSpeaking() : speakPageContent())}
             className={`min-h-11 rounded-md border px-3 text-xs font-bold ${
-              isPlaying ? 'border-danger bg-danger text-on-primary' : 'border-transparent text-navy hover:bg-mist'
+              isPlayerOpen ? 'border-danger bg-danger text-on-primary' : 'border-transparent text-navy hover:bg-mist'
             }`}
           >
-            {isPlaying ? 'Parar leitura' : 'Ouvir página'}
+            {isPlayerOpen ? 'Parar leitura' : 'Ouvir página'}
           </button>
         </div>
       </header>

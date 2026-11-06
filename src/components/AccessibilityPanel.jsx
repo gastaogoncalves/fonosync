@@ -96,7 +96,7 @@ export default function AccessibilityPanel({
     savePreferences,
     resetDefaults,
     saveStatus,
-    isPlaying,
+    isPlayerOpen,
     playerStatus,
     speakPageContent,
     stopSpeaking,
@@ -147,12 +147,12 @@ export default function AccessibilityPanel({
             Leitor de voz
           </h3>
           <Button
-            variant={isPlaying ? 'danger' : 'primary'}
-            onClick={() => (isPlaying ? stopSpeaking() : speakPageContent())}
+            variant={isPlayerOpen ? 'danger' : 'primary'}
+            onClick={() => (isPlayerOpen ? stopSpeaking() : speakPageContent())}
             disabled={!speechSupported}
           >
-            {isPlaying ? <VolumeX size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
-            {isPlaying ? 'Parar leitura' : 'Ouvir página'}
+            {isPlayerOpen ? <VolumeX size={16} aria-hidden="true" /> : <Volume2 size={16} aria-hidden="true" />}
+            {isPlayerOpen ? 'Parar leitura' : 'Ouvir página'}
           </Button>
         </div>
 
