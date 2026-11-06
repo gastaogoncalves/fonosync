@@ -126,7 +126,7 @@ export default function AccessibilityPanel({
       onKeyDown={(event) => event.key === 'Escape' && onClose()}
       className={`${className} z-50 flex max-h-[calc(100vh-112px)] w-97.5 max-w-[calc(100vw-2rem)] flex-col gap-3.5 overflow-y-auto rounded-[10px] border-2 border-navy bg-surface p-5 shadow-[0_8px_24px_rgba(13,51,71,0.09)]`}
     >
-      <div className="flex items-center justify-between">
+      <div className="sticky -top-5 z-10 -mx-5 -mt-5 flex items-center justify-between rounded-t-[10px] bg-surface px-5 pt-5 pb-2">
         <h2 id={`${id}-titulo`} ref={titleRef} tabIndex={-1} className="text-[22px] text-navy">
           Acessibilidade
         </h2>
