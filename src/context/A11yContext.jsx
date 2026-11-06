@@ -113,9 +113,17 @@ const MALE_FALLBACK_PITCH = 0.6;
 
 const isBrazilian = (voice) => /^pt[-_]br$/i.test(voice.lang || '');
 
+// vozes neurais (Edge) e do Google soam mais humanas que as instaladas no sistema
+function voiceScore(voice) {
+  let score = isBrazilian(voice) ? 1 : 0;
+  if (/natural|neural|online/i.test(voice.name)) score += 4;
+  else if (/google/i.test(voice.name)) score += 2;
+  return score;
+}
+
 function resolveVoice(voices, gender) {
   const portuguese = voices.filter((voice) => /^pt([-_]|$)/i.test(voice.lang || ''));
-  const ordered = [...portuguese.filter(isBrazilian), ...portuguese.filter((voice) => !isBrazilian(voice))];
+  const ordered = [...portuguese].sort((first, second) => voiceScore(second) - voiceScore(first));
 
   const wanted = gender === 'male' ? MALE_VOICE : FEMALE_VOICE;
   const other = gender === 'male' ? FEMALE_VOICE : MALE_VOICE;
