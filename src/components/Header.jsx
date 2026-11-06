@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Accessibility, Volume2 } from 'lucide-react';
+import { PersonStanding, Volume2 } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import A11yModal from './A11yModal';
 import { buttonClass } from './buttonStyles';
@@ -42,7 +42,7 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setShowA11y(true)} className={buttonClass('secondary')}>
-              <Accessibility size={16} aria-hidden="true" />
+              <PersonStanding size={16} aria-hidden="true" />
               <span className="hidden sm:inline">Acessibilidade</span>
               <span className="sr-only sm:hidden">Acessibilidade</span>
             </button>

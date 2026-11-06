@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Accessibility,
   Activity,
   AlertCircle,
   ArrowUpRight,
@@ -10,6 +9,7 @@ import {
   FileText,
   Home,
   LogOut,
+  PersonStanding,
   Settings,
   UserPlus,
   Users,
@@ -194,7 +194,7 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
               onClick={() => setShowA11y(true)}
               className="flex items-center justify-center gap-1 rounded-md border border-white/30 px-2 py-2 text-[11px] font-bold text-white hover:bg-white/10"
             >
-              <Accessibility size={14} aria-hidden="true" /> Acessibilidade
+              <PersonStanding size={14} aria-hidden="true" /> Acessibilidade
             </button>
             <button
               type="button"

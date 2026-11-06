@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import {
-  Accessibility,
   Award,
   Calendar,
   CheckCircle2,
+  Flame,
   Gamepad2,
   Home,
   LogOut,
   Mail,
+  PersonStanding,
   Phone,
-  Save,
-  Flame,
   Puzzle,
+  Save,
   Settings,
   Star,
   Target,
@@ -124,7 +124,7 @@ export default function PatientDashboard() {
             onClick={() => setShowA11y(true)}
             className="flex w-full items-center justify-center gap-2 rounded-md border border-white/30 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
           >
-            <Accessibility size={16} aria-hidden="true" /> Acessibilidade
+            <PersonStanding size={16} aria-hidden="true" /> Acessibilidade
           </button>
 
           <div className="flex items-center gap-3 rounded-md border border-white/15 bg-white/10 p-3">

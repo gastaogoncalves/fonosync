@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Accessibility, ArrowRight, Eye, EyeOff, Lock, ShieldCheck, User, UserCheck, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, PersonStanding, ShieldCheck, User, UserCheck, Volume2, VolumeX } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import { useA11y } from '../hooks/useA11y';
 import A11yModal from '../components/A11yModal';
@@ -130,7 +130,7 @@ export default function AccessArea() {
               onClick={() => setShowA11y(true)}
               className="flex min-h-11 items-center gap-1.5 rounded-lg border border-navy px-3.5 text-xs font-bold text-navy hover:bg-mist"
             >
-              <Accessibility size={16} aria-hidden="true" /> Acessibilidade
+              <PersonStanding size={16} aria-hidden="true" /> Acessibilidade
             </button>
             <button
               type="button"
