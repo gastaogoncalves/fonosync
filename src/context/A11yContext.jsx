@@ -281,8 +281,8 @@ export function A11yProvider({ children }) {
     utterance.onend = () => {
       if (runRef.current === runId) speakChunk(index + 1);
     };
-    utterance.onerror = () => {
-      if (runRef.current !== runId) return;
+    utterance.onerror = (event) => {
+      if (runRef.current !== runId || event.error === 'interrupted' || event.error === 'canceled') return;
       clearReadingHighlight();
       setPlayerStatus('idle');
     };
@@ -291,8 +291,13 @@ export function A11yProvider({ children }) {
     chunkStartRef.current = 0;
     setSpokenChars(charsBefore(index));
     setPlayerStatus('playing');
-    synth.resume();
-    synth.speak(utterance);
+
+    // o navegador precisa de um instante depois do cancel(), senão corta a fala nova
+    setTimeout(() => {
+      if (runRef.current !== runId) return;
+      synth.resume();
+      synth.speak(utterance);
+    }, 100);
   };
 
   const startReading = (customText) => {
