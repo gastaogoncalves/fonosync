@@ -1,12 +1,14 @@
 import { useEffect } from 'react';
 import { AudioWaveform, Gamepad2, Network, School, TriangleAlert } from 'lucide-react';
 import Header from '../components/Header';
-import Button from '../components/Button';
 import FeatureRow from '../components/FeatureRow';
 import PhoneticCard from '../components/PhoneticCard';
 import StatsStrip from '../components/StatsStrip';
+import About from '../components/About';
+import Benefits from '../components/Benefits';
+import { buttonClass } from '../components/buttonStyles';
+import Reveal from '../components/Reveal';
 import Footer from '../components/Footer';
-import { scrollToId } from '../utils/scroll';
 
 const features = [
   {
@@ -96,88 +98,91 @@ const features = [
   },
 ];
 
-const featureIds = ['desafio', 'solucao', 'analise', 'jogos', 'escolas'];
+// Rola até a seção sem mexer no hash (o app usa rotas por hash).
+const scrollToSection = (id) => (e) => {
+  e.preventDefault();
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+};
 
 export default function LandingPage() {
   useEffect(() => {
     document.title = 'FonoSync';
   }, []);
 
-  const handleGoToTriagem = () => {
-    window.location.hash = '#/triagem';
-  };
-
-  const handleScrollToFeatures = () => scrollToId('recursos');
-
   return (
-    <div className="min-h-screen font-sans">
+    <div className="min-h-screen">
       <Header />
 
       <main>
+        {/* Hero */}
         <section className="bg-mist">
-          <div className="mx-auto grid max-w-360 items-center gap-12 px-6 md:px-18 py-18 lg:grid-cols-2">
+          <div className="mx-auto grid max-w-360 items-center gap-12 px-18 py-18 lg:grid-cols-2">
             <div>
               <span className="mb-4 block text-sm font-bold tracking-wider text-primary uppercase">
                 FONOAUDIOLOGIA CONECTADA E ACESSÍVEL
               </span>
-              <h1 className="mb-6 text-4xl leading-tight text-navy md:text-5xl lg:text-6xl font-serif">
+              <h1 className="mb-6 text-4xl leading-tight text-navy md:text-5xl lg:text-6xl">
                 Tecnologia que transforma a terapia fonoaudiológica.
               </h1>
               <p className="mb-10 max-w-xl text-xl text-muted">
                 Conectamos pacientes, profissionais e avaliações inteligentes para tornar cada jornada terapêutica mais contínua, segura e humana.
               </p>
-              
-              {/* Botões CTA principais sem os links inferiores */}
               <div className="flex flex-col gap-4 sm:flex-row">
-                <Button variant="primary" onClick={handleGoToTriagem}>
-                  Experimentar Avaliação
-                </Button>
-                <Button variant="secondary" onClick={handleScrollToFeatures}>
-                  Conhecer Plataforma
-                </Button>
+                <a href="#/triagem" className={buttonClass('primary')}>Experimentar Avaliação</a>
+                <a href="#sobre" onClick={scrollToSection('sobre')} className={buttonClass('secondary')}>Conhecer Plataforma</a>
               </div>
             </div>
 
-            <PhoneticCard />
+            {/* Mesmo efeito do mockup antigo: inclinação 3D que se endireita no hover */}
+            <div className="drop-shadow-[0_28px_36px_rgba(13,51,71,0.24)] transition-transform duration-500 lg:[transform:perspective(1000px)_rotateY(-4deg)_rotateX(2deg)_scale(1.08)] lg:hover:[transform:perspective(1000px)_rotateY(-1deg)_rotateX(1deg)_scale(1.08)]">
+              <PhoneticCard />
+            </div>
           </div>
         </section>
 
         <StatsStrip />
 
-        <section id="recursos" className="mx-auto flex max-w-360 flex-col gap-20 px-6 md:px-18 py-20">
-         {features.map((feature, index) => (
-            <FeatureRow
+        {/* Sobre */}
+        <About />
+
+        {/* Seções de funcionalidades */}
+        <section className="mx-auto flex max-w-360 flex-col gap-20 px-18 py-20">
+          {features.map((feature, index) => (
+            <Reveal
               key={feature.title}
-              id={featureIds[index]}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              progress={feature.progress}
-              reverse={index % 2 === 1}
-            />
+              id={index === 0 ? 'recursos' : undefined}
+              className="scroll-mt-24"
+            >
+              <FeatureRow
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                progress={feature.progress}
+                reverse={index % 2 === 1}
+              />
+            </Reveal>
           ))}
         </section>
 
+        {/* Benefícios */}
+        <Benefits />
+
+        {/* CTA final */}
         <section className="bg-mist py-24 text-center">
-          <div className="mx-auto max-w-360 px-6 md:px-18">
-            <h2 className="mb-6 text-3xl text-navy md:text-4xl font-serif">
+          <Reveal className="mx-auto max-w-360 px-18">
+            <h2 className="mb-6 text-3xl text-navy md:text-4xl">
               Uma terapia mais conectada começa com um próximo passo claro.
             </h2>
             <p className="mb-10 text-lg text-muted">
               Experimente a avaliação digital ou conheça a plataforma completa.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Button variant="primary" onClick={handleGoToTriagem}>
-                Experimentar Avaliação
-              </Button>
-              <Button variant="secondary" onClick={handleScrollToFeatures}>
-                Conhecer Plataforma
-              </Button>
+              <a href="#/triagem" className={buttonClass('primary')}>Experimentar Avaliação</a>
+              <a href="#sobre" onClick={scrollToSection('sobre')} className={buttonClass('secondary')}>Conhecer Plataforma</a>
             </div>
-          </div>
+          </Reveal>
         </section>
       </main>
-
       <Footer />
     </div>
   );

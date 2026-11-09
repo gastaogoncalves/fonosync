@@ -6,6 +6,20 @@ import A11yModal from './A11yModal';
 export default function Header() {
   const [showA11y, setShowA11y] = useState(false);
 
+  // Rola até a seção sem alterar o hash (o app usa rotas por hash).
+  // Se o usuário estiver em outra tela, volta para a landing e rola em seguida.
+  const goTo = (id) => (e) => {
+    e.preventDefault();
+    const scroll = () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+    if (document.getElementById(id)) {
+      scroll();
+    } else {
+      window.location.hash = '#/';
+      setTimeout(scroll, 150);
+    }
+  };
+
   return (
     <>
       <header className="sticky top-0 z-40 bg-surface/95 backdrop-blur-md border-b border-line px-6 py-4">
@@ -16,7 +30,9 @@ export default function Header() {
           </a>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-ink">
-            <a href="#recursos" className="hover:text-primary transition-colors">Recursos</a>
+            <a href="#sobre" onClick={goTo('sobre')} className="hover:text-primary transition-colors">Sobre</a>
+            <a href="#recursos" onClick={goTo('recursos')} className="hover:text-primary transition-colors">Recursos</a>
+            <a href="#beneficios" onClick={goTo('beneficios')} className="hover:text-primary transition-colors">Benefícios</a>
           </nav>
 
           <div className="flex items-center gap-3">
