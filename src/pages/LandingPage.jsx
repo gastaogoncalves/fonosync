@@ -46,23 +46,6 @@ const features = [
     },
   },
   {
-    icon: AudioWaveform,
-    title: 'Análise Fonética Inteligente',
-    description: 'Envie ou grave áudio, visualize scores por fonema, receba alertas de confiança e valide profissionalmente cada resultado.',
-    progress: {
-      eyebrow: 'Análise do áudio',
-      items: [
-        { label: 'Precisão no fonema /r/', value: 64 },
-        { label: 'Precisão no fonema /s/', value: 88 },
-      ],
-      note: {
-        tone: 'success',
-        title: 'Pronto para validação',
-        text: 'Confira os trechos marcados antes de liberar o relatório.',
-      },
-    },
-  },
-  {
     icon: Gamepad2,
     title: 'Jogos que avaliam e tratam',
     description: 'Atividades por faixa etária combinam acolhimento e rigor clínico, com desempenho integrado ao acompanhamento terapêutico.',
@@ -145,7 +128,12 @@ export default function LandingPage() {
         {/* Sobre */}
         <About />
 
-        {/* Seções de funcionalidades */}
+        {/* Barrinha separadora com 3px de espessura */}
+        <div className="mx-auto max-w-360 px-18 my-8">
+          <div className="h-[3px] w-full rounded-full bg-slate-200/80" />
+        </div>
+
+        {/* Seções de funcionalidades (Desafio, Solução, etc.) */}
         <section className="mx-auto flex max-w-360 flex-col gap-20 px-18 py-20">
           {features.map((feature, index) => (
             <Reveal
@@ -164,8 +152,18 @@ export default function LandingPage() {
           ))}
         </section>
 
+        {/* Barrinha separadora com 3px de espessura entre Recursos e Benefícios */}
+        <div className="mx-auto max-w-360 px-18 my-8">
+          <div className="h-[3px] w-full rounded-full bg-slate-200/80" />
+        </div>
+
         {/* Benefícios */}
         <Benefits />
+
+        {/* Barrinha separadora com 3px de espessura entre Benefícios e CTA */}
+        <div className="mx-auto max-w-360 px-18 my-8">
+          <div className="h-[3px] w-full rounded-full bg-slate-200/80" />
+        </div>
 
         {/* CTA final */}
         <section className="bg-mist py-24 text-center">
