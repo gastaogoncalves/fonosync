@@ -192,14 +192,14 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
               onClick={() => setShowA11y(true)}
               className="flex items-center justify-center gap-1 rounded-md border border-white/30 px-2 py-2 text-[11px] font-bold text-white hover:bg-white/10"
             >
-              <PersonStanding size={14} aria-hidden="true" /> Acessibilidade
+              <PersonStanding size={14} className="shrink-0" aria-hidden="true" /> Acessibilidade
             </button>
             <button
               type="button"
               onClick={() => speakPageContent()}
               className="flex items-center justify-center gap-1 rounded-md border border-white/30 px-2 py-2 text-[11px] font-bold text-white hover:bg-white/10"
             >
-              <Volume2 size={14} aria-hidden="true" /> Ouvir página
+              <Volume2 size={14} className="shrink-0" aria-hidden="true" /> Ouvir página
             </button>
           </div>
 
