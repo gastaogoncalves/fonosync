@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, UserPlus, FileText, FolderArchive, ChevronRight, X, Save, CheckCircle2, RotateCcw } from 'lucide-react';
-import { api } from '../../services/api';
+import { Search, Filter, UserPlus, Pencil, FolderArchive, ChevronRight, X, Save, CheckCircle2, CircleAlert, RotateCcw, Trash2 } from 'lucide-react';
+import {
+  archivePatient,
+  createGuardian,
+  createPatient,
+  deletePatient,
+  listPatients,
+  updatePatient,
+} from '../../services/patientService';
 
 const STATUS = {
   ATIVO: { label: 'Em acompanhamento', type: 'acompanhamento' },
@@ -50,7 +57,8 @@ export default function Patients() {
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [successNotice, setSuccessNotice] = useState(false);
+  const [editingPatient, setEditingPatient] = useState(null);
+  const [notice, setNotice] = useState(null);
 
   const [filterAgeGroup, setFilterAgeGroup] = useState('todos');
 
@@ -59,17 +67,24 @@ export default function Patients() {
   const [saving, setSaving] = useState(false);
 
   const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    api('/api/paciente')
+    listPatients()
       .then((list) => setPatients(list.map(toRow)))
-      .catch((error) => setLoadError(error.message));
+      .catch((error) => setLoadError(error.message))
+      .finally(() => setLoading(false));
   }, []);
 
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
   const formAge = ageFrom(form.dateOfBirth);
-  const needsGuardian = formAge !== null && formAge < 18;
+  const needsGuardian = formAge !== null && formAge < 18 && !editingPatient?.guardianId;
+
+  const showNotice = (tone, text) => {
+    setNotice({ tone, text });
+    if (tone === 'success') setTimeout(() => setNotice(null), 4000);
+  };
 
   const filteredPatients = patients.filter((patient) => {
     const term = searchTerm.toLowerCase();
@@ -98,72 +113,104 @@ export default function Patients() {
   const replacePatient = (updated) => {
     const row = toRow(updated);
     setPatients((current) => current.map((p) => (p.id === row.id ? row : p)));
-    setSelectedPatient(row);
+    return row;
   };
 
-  const handleToggleArchive = async (patient, e) => {
-    e.stopPropagation();
+  const handleToggleArchive = async (patient) => {
     try {
       if (patient.archived) {
         const { id, name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId } = patient;
         replacePatient(
-          await api(`/api/paciente/update/${id}`, {
-            method: 'PUT',
-            body: { name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId, patientStatus: 'ATIVO' },
-          }),
+          await updatePatient(id, { name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId, patientStatus: 'ATIVO' }),
         );
+        showNotice('success', `${patient.name} voltou para os pacientes ativos.`);
       } else {
-        replacePatient(await api(`/api/paciente/${patient.id}/archive`, { method: 'PATCH' }));
+        replacePatient(await archivePatient(patient.id));
+        showNotice('success', `Prontuário de ${patient.name} arquivado.`);
       }
-      setShowRecordModal(false);
     } catch (error) {
-      alert(error.message);
+      showNotice('danger', error.message);
     }
+    setShowRecordModal(false);
+  };
+
+  const handleDelete = async (patient) => {
+    if (!window.confirm(`Excluir ${patient.name} permanentemente? Essa ação não pode ser desfeita.`)) return;
+    try {
+      await deletePatient(patient.id);
+      setPatients((current) => current.filter((p) => p.id !== patient.id));
+      showNotice('success', `${patient.name} foi excluído.`);
+    } catch (error) {
+      showNotice('danger', error.message);
+    }
+    setShowRecordModal(false);
+  };
+
+  const openNewPatient = () => {
+    setEditingPatient(null);
+    setForm(emptyForm);
+    setShowNewPatientModal(true);
+  };
+
+  const openEditPatient = (patient) => {
+    setEditingPatient(patient);
+    setForm({
+      ...emptyForm,
+      name: patient.name,
+      dateOfBirth: patient.dateOfBirth ?? '',
+      phone: patient.contactPatient ?? '',
+      cpf: patient.cpfPatient ?? '',
+      sex: patient.sex ?? '',
+    });
+    setShowRecordModal(false);
+    setShowNewPatientModal(true);
   };
 
   const closeNewPatient = () => {
     setShowNewPatientModal(false);
+    setEditingPatient(null);
     setForm(emptyForm);
     setFormError('');
   };
 
-  const handleCreatePatient = async (e) => {
+  const handleSavePatient = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
 
     setSaving(true);
     setFormError('');
     try {
-      let guardianId = null;
+      let guardianId = editingPatient?.guardianId ?? null;
       if (needsGuardian) {
-        const guardian = await api('/api/guardians', {
-          method: 'POST',
-          body: {
-            name: form.guardianName,
-            cpf: form.guardianCpf,
-            phoneNumber: form.guardianPhone,
-            relationship: form.guardianRelationship,
-          },
+        const guardian = await createGuardian({
+          name: form.guardianName,
+          cpf: form.guardianCpf,
+          phoneNumber: form.guardianPhone,
+          relationship: form.guardianRelationship,
         });
         guardianId = guardian.id;
       }
 
-      const created = await api('/api/paciente/register', {
-        method: 'POST',
-        body: {
-          name: form.name.trim(),
-          dateOfBirth: form.dateOfBirth || null,
-          cpfPatient: form.cpf || null,
-          contactPatient: form.phone || null,
-          sex: form.sex || null,
-          guardianId,
-        },
-      });
+      const data = {
+        name: form.name.trim(),
+        dateOfBirth: form.dateOfBirth || null,
+        cpfPatient: form.cpf || null,
+        contactPatient: form.phone || null,
+        sex: form.sex || null,
+        guardianId,
+      };
 
-      setPatients([toRow(created), ...patients]);
+      if (editingPatient) {
+        replacePatient(
+          await updatePatient(editingPatient.id, { ...data, cid10: editingPatient.cid10, patientStatus: editingPatient.patientStatus }),
+        );
+        showNotice('success', 'Dados do paciente atualizados.');
+      } else {
+        const created = await createPatient(data);
+        setPatients([toRow(created), ...patients]);
+        showNotice('success', 'Paciente cadastrado com sucesso! Prontuário gerado.');
+      }
       closeNewPatient();
-      setSuccessNotice(true);
-      setTimeout(() => setSuccessNotice(false), 3000);
     } catch (error) {
       setFormError(error.message);
     } finally {
@@ -192,12 +239,20 @@ export default function Patients() {
         </div>
       </div>
 
-      {successNotice && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 flex items-center gap-3 text-xs shadow-sm">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-bold text-emerald-950">Paciente cadastrado com sucesso! Prontuário gerado.</span>
-        </div>
-      )}
+      <div role="status">
+        {notice?.tone === 'success' && (
+          <div className="p-3.5 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 flex items-center gap-3 text-xs shadow-sm">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-bold text-emerald-950">{notice.text}</span>
+          </div>
+        )}
+        {notice?.tone === 'danger' && (
+          <div className="p-3.5 rounded-xl bg-rose-50 border-l-4 border-rose-600 flex items-center gap-3 text-xs shadow-sm">
+            <CircleAlert className="w-4 h-4 text-rose-600 shrink-0" />
+            <span className="font-bold text-rose-950">{notice.text}</span>
+          </div>
+        )}
+      </div>
 
       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
@@ -222,7 +277,7 @@ export default function Patients() {
             </button>
             <button
               type="button"
-              onClick={() => setShowNewPatientModal(true)}
+              onClick={openNewPatient}
               className="px-4 py-2.5 bg-[#0284C7] text-white text-xs font-bold rounded-xl flex items-center gap-2 hover:bg-sky-700 shadow-sm cursor-pointer"
             >
               <UserPlus size={15} /> Novo cadastro
@@ -293,7 +348,16 @@ export default function Patients() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs text-[#172C3A]">
-              {filteredPatients.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-slate-500">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="size-4 animate-spin rounded-full border-2 border-slate-300 border-t-[#0284C7]" aria-hidden="true" />
+                      Carregando pacientes...
+                    </span>
+                  </td>
+                </tr>
+              ) : filteredPatients.length > 0 ? (
                 filteredPatients.map((patient) => (
                   <tr key={patient.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-4 px-6 font-bold flex items-center gap-3">
@@ -327,7 +391,7 @@ export default function Patients() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-slate-400">
+                  <td colSpan={4} className={`py-8 text-center ${loadError ? 'font-bold text-rose-700' : 'text-slate-400'}`}>
                     {loadError || 'Nenhum paciente encontrado nesta categoria.'}
                   </td>
                 </tr>
@@ -393,7 +457,9 @@ export default function Patients() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-lg font-bold font-serif text-[#172C3A]">Cadastrar Novo Paciente</h3>
+              <h3 className="text-lg font-bold font-serif text-[#172C3A]">
+                {editingPatient ? 'Editar Paciente' : 'Cadastrar Novo Paciente'}
+              </h3>
               <button 
                 type="button" 
                 onClick={closeNewPatient}
@@ -403,7 +469,7 @@ export default function Patients() {
               </button>
             </div>
 
-            <form onSubmit={handleCreatePatient} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSavePatient} className="space-y-3.5 text-xs">
               <div>
                 <label className="block font-bold mb-1 text-slate-700">Nome Completo do Paciente *</label>
                 <input
@@ -511,7 +577,7 @@ export default function Patients() {
               )}
 
               {formError && (
-                <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-2.5 font-bold text-amber-900">
+                <p role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-2.5 font-bold text-rose-800">
                   {formError}
                 </p>
               )}
@@ -529,7 +595,12 @@ export default function Patients() {
                   disabled={saving}
                   className="flex-1 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <Save size={15} /> {saving ? 'Salvando...' : 'Salvar Prontuário'}
+                  {saving ? (
+                    <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden="true" />
+                  ) : (
+                    <Save size={15} />
+                  )}
+                  {saving ? 'Salvando...' : editingPatient ? 'Salvar Alterações' : 'Salvar Prontuário'}
                 </button>
               </div>
             </form>
@@ -581,27 +652,36 @@ export default function Patients() {
 
             </div>
 
-            <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={(e) => handleToggleArchive(selectedPatient, e)}
-                className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
-                  selectedPatient.archived 
-                    ? 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100' 
-                    : 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100'
-                }`}
-              >
-                {selectedPatient.archived ? <RotateCcw size={14} /> : <FolderArchive size={14} />}
-                {selectedPatient.archived ? 'Restaurar Paciente' : 'Arquivar Prontuário'}
-              </button>
+            <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleToggleArchive(selectedPatient)}
+                  className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
+                    selectedPatient.archived
+                      ? 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100'
+                      : 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100'
+                  }`}
+                >
+                  {selectedPatient.archived ? <RotateCcw size={14} /> : <FolderArchive size={14} />}
+                  {selectedPatient.archived ? 'Restaurar Paciente' : 'Arquivar Prontuário'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(selectedPatient)}
+                  className="px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-rose-300 text-rose-800 bg-rose-50 hover:bg-rose-100"
+                >
+                  <Trash2 size={14} /> Excluir
+                </button>
+              </div>
 
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => alert(`A Gerar relatório em PDF para ${selectedPatient.name}...`)}
+                  onClick={() => openEditPatient(selectedPatient)}
                   className="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer text-xs"
                 >
-                  <FileText size={15} /> Exportar Relatório
+                  <Pencil size={15} /> Editar
                 </button>
                 <button
                   type="button"
