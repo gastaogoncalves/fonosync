@@ -22,7 +22,7 @@ import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import A11yModal from '../components/A11yModal';
 import Button from '../components/Button';
 import { buttonClass } from '../components/buttonStyles';
-import { logout } from '../services/authService';
+import { useAuth } from '../hooks/useAuth';
 
 const navItems = [
   { id: 'inicio', label: 'Início', icon: Home },
@@ -58,6 +58,7 @@ function Field({ id, label, icon: Icon, ...props }) {
 
 export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState('inicio');
+  const { logout } = useAuth();
   const [showA11y, setShowA11y] = useState(false);
 
   const [patientData, setPatientData] = useState({

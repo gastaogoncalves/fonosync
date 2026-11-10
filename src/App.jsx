@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { A11yProvider } from './context/A11yContext';
 import { useHashRoute } from './hooks/useHashRoute';
-import { currentRole, homeFor } from './services/authService';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
+import { homeFor } from './services/authService';
 import LandingPage from './pages/LandingPage';
 import AccessArea from './pages/AccessArea';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
@@ -47,7 +49,7 @@ function Redirect({ to }) {
 
 function Router() {
   const route = useHashRoute();
-  const role = currentRole();
+  const role = useAuth().session?.role;
 
   if (route === '/triagem') {
     return (
@@ -80,10 +82,12 @@ function Router() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <A11yProvider>
-        <Router />
-        <PageReader />
-      </A11yProvider>
+      <AuthProvider>
+        <A11yProvider>
+          <Router />
+          <PageReader />
+        </A11yProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

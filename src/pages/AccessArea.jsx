@@ -7,7 +7,8 @@ import InfoDialog from '../components/InfoDialog';
 import Notice from '../components/Notice';
 import { buttonClass } from '../components/buttonStyles';
 import { INFO_PAGES } from '../utils/constants';
-import { homeFor, login, register } from '../services/authService';
+import { useAuth } from '../hooks/useAuth';
+import { homeFor } from '../services/authService';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -54,6 +55,7 @@ export default function AccessArea() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showA11y, setShowA11y] = useState(false);
   const { isPlayerOpen, speakPageContent, stopSpeaking } = useA11y();
+  const { login, register } = useAuth();
 
   const isPro = userType === 'profissional';
 
@@ -103,7 +105,7 @@ export default function AccessArea() {
           : await register(email, form.password, isPro ? 'ROLE_FONO' : 'ROLE_PACIENTE');
       window.location.hash = homeFor(session.role);
     } catch (error) {
-      setNotice({ tone: 'warning', title: mode === 'login' ? 'Não foi possível entrar' : 'Não foi possível criar a conta', text: error.message });
+      setNotice({ tone: 'danger', title: mode === 'login' ? 'Não foi possível entrar' : 'Não foi possível criar a conta', text: error.message });
     } finally {
       setLoading(false);
     }

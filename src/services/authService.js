@@ -1,4 +1,4 @@
-import { api, clearSession, getSession, saveSession } from './api';
+import { api, clearSession, saveSession } from './api';
 
 export async function login(email, password) {
   const session = await api('/api/auth/login', { method: 'POST', body: { email, password } });
@@ -14,13 +14,8 @@ export async function register(email, password, role) {
 
 export function logout() {
   clearSession();
-  window.location.hash = '#/';
 }
 
 export function homeFor(role) {
   return role === 'ROLE_PACIENTE' ? '#/paciente/inicio' : '#/profissional/dashboard';
-}
-
-export function currentRole() {
-  return getSession()?.role ?? null;
 }

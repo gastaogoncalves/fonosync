@@ -34,16 +34,19 @@ export async function api(path, { method = 'GET', body } = {}) {
     throw new Error('Não foi possível conectar ao servidor. Confira se o back-end está rodando.');
   }
 
-  // token vencido ou inválido: volta para o login
-  if ((response.status === 401 || response.status === 403) && session && !path.startsWith('/api/auth')) {
+  if (response.status === 204) return null;
+
+  const data = await response.json().catch(() => null);
+
+  // token vencido ou inválido: o back responde 401 ou 403 sem mensagem
+  const expired = response.status === 401 || (response.status === 403 && !data?.message);
+  if (expired && session && !path.startsWith('/api/auth')) {
     clearSession();
+    window.dispatchEvent(new Event('fonosync:sessao-encerrada'));
     window.location.hash = '#/acesso';
     throw new Error('Sua sessão expirou. Entre novamente.');
   }
 
-  if (response.status === 204) return null;
-
-  const data = await response.json().catch(() => null);
   if (!response.ok) {
     const fieldMessage = data?.fieldErrors?.[0]?.message;
     throw new Error(fieldMessage || data?.message || 'Não foi possível concluir a ação. Tente de novo.');
