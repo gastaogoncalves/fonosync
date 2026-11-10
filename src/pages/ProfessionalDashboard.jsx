@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import { useA11y } from '../hooks/useA11y';
+import { logout } from '../services/authService';
 import A11yModal from '../components/A11yModal';
 import Button from '../components/Button';
 import Notice from '../components/Notice';
@@ -147,9 +148,6 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
     window.location.assign(`#/profissional/${newSection}`);
   };
 
-  const handleLogout = () => {
-    window.location.assign('#/');
-  };
 
   const info = pageInfo[activeSection] ?? pageInfo.dashboard;
 
@@ -217,7 +215,7 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
             </div>
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={logout}
               aria-label="Sair para a página inicial"
               title="Sair para a página inicial"
               className="rounded p-1 text-on-band-muted hover:text-white"

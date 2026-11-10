@@ -7,19 +7,9 @@ import InfoDialog from '../components/InfoDialog';
 import Notice from '../components/Notice';
 import { buttonClass } from '../components/buttonStyles';
 import { INFO_PAGES } from '../utils/constants';
+import { homeFor, login, register } from '../services/authService';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function identifierError(value, userType) {
-  const text = value.trim();
-  if (!text) return userType === 'profissional' ? 'Informe seu e-mail profissional ou CRFa.' : 'Informe seu e-mail ou CPF.';
-  if (EMAIL.test(text)) return '';
-  if (userType === 'profissional' && /^crfa\s*[\d\s-]+$/i.test(text)) return '';
-  if (userType === 'paciente' && text.replace(/\D/g, '').length === 11) return '';
-  return userType === 'profissional'
-    ? 'Use um e-mail válido ou o CRFa (ex.: CRFa 2-19876).'
-    : 'Use um e-mail válido ou um CPF com 11 números.';
-}
 
 function TextField({ id, label, icon: Icon, error, hint, trailing, ...props }) {
   const describedBy = error ? `${id}-erro` : hint ? `${id}-dica` : undefined;
@@ -56,10 +46,11 @@ function TextField({ id, label, icon: Icon, error, hint, trailing, ...props }) {
 export default function AccessArea() {
   const [userType, setUserType] = useState('profissional');
   const [mode, setMode] = useState('login'); // 'login' | 'register'
-  const [form, setForm] = useState({ name: '', identifier: '', password: '' });
+  const [form, setForm] = useState({ identifier: '', password: '' });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showA11y, setShowA11y] = useState(false);
   const { isPlayerOpen, speakPageContent, stopSpeaking } = useA11y();
@@ -83,23 +74,39 @@ export default function AccessArea() {
     setNotice(null);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const email = form.identifier.trim();
     const next = {
-      name: mode === 'register' && form.name.trim().length < 3 ? 'Informe seu nome completo.' : '',
-      identifier: identifierError(form.identifier, userType),
-      password: form.password.length < 8 ? 'Use ao menos 8 caracteres.' : '',
+      identifier: !email ? 'Informe seu e-mail.' : !EMAIL.test(email) ? 'Use um e-mail válido.' : '',
+      password: !form.password
+        ? 'Informe sua senha.'
+        : mode === 'register' && form.password.length < 6
+          ? 'Use ao menos 6 caracteres.'
+          : '',
     };
     setErrors(next);
 
-    const firstInvalid = ['name', 'identifier', 'password'].find((key) => next[key]);
+    const firstInvalid = ['identifier', 'password'].find((key) => next[key]);
     if (firstInvalid) {
       document.getElementById(`acesso-${firstInvalid}`)?.focus();
       return;
     }
 
-    window.location.hash = isPro ? '#/profissional/dashboard' : '#/paciente/inicio';
+    setLoading(true);
+    setNotice(null);
+    try {
+      const session =
+        mode === 'login'
+          ? await login(email, form.password)
+          : await register(email, form.password, isPro ? 'ROLE_FONO' : 'ROLE_PACIENTE');
+      window.location.hash = homeFor(session.role);
+    } catch (error) {
+      setNotice({ tone: 'warning', title: mode === 'login' ? 'Não foi possível entrar' : 'Não foi possível criar a conta', text: error.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgot = () => {
@@ -110,6 +117,7 @@ export default function AccessArea() {
     }
     setErrors({});
     setNotice({
+      tone: 'info',
       title: 'Confira seu e-mail',
       text: 'Se o endereço estiver cadastrado, você receberá as instruções.',
     });
@@ -175,25 +183,11 @@ export default function AccessArea() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {mode === 'register' && (
-              <TextField
-                id="acesso-name"
-                label="Nome completo"
-                icon={User}
-                type="text"
-                autoComplete="name"
-                value={form.name}
-                onChange={update('name')}
-                error={errors.name}
-                placeholder="Seu nome"
-              />
-            )}
-
             <TextField
               id="acesso-identifier"
-              label={isPro ? 'E-mail profissional / CRFa' : 'E-mail ou CPF do responsável'}
+              label={isPro ? 'E-mail profissional' : 'E-mail'}
               icon={User}
-              type="text"
+              type="email"
               autoComplete="username"
               value={form.identifier}
               onChange={update('identifier')}
@@ -210,7 +204,7 @@ export default function AccessArea() {
               value={form.password}
               onChange={update('password')}
               error={errors.password}
-              hint="Use ao menos 8 caracteres."
+              hint={mode === 'register' ? 'Use ao menos 6 caracteres.' : undefined}
               placeholder="••••••••"
               trailing={
                 <button
@@ -227,16 +221,18 @@ export default function AccessArea() {
 
             <div role="status">
               {notice && (
-                <Notice tone="info" title={notice.title}>
+                <Notice tone={notice.tone} title={notice.title}>
                   {notice.text}
                 </Notice>
               )}
             </div>
 
-            <button type="submit" className={`${buttonClass('primary')} w-full`}>
-              {mode === 'login'
-                ? `Entrar como ${isPro ? 'fonoaudiólogo' : 'paciente'}`
-                : `Criar conta de ${isPro ? 'fonoaudiólogo' : 'paciente'}`}
+            <button type="submit" disabled={loading} className={`${buttonClass('primary')} w-full`}>
+              {loading
+                ? 'Aguarde...'
+                : mode === 'login'
+                  ? `Entrar como ${isPro ? 'fonoaudiólogo' : 'paciente'}`
+                  : `Criar conta de ${isPro ? 'fonoaudiólogo' : 'paciente'}`}
               <ArrowRight size={16} aria-hidden="true" />
             </button>
 

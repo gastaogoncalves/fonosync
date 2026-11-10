@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { A11yProvider } from './context/A11yContext';
 import { useHashRoute } from './hooks/useHashRoute';
+import { currentRole, homeFor } from './services/authService';
 import LandingPage from './pages/LandingPage';
 import AccessArea from './pages/AccessArea';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
@@ -37,8 +38,16 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+function Redirect({ to }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+}
+
 function Router() {
   const route = useHashRoute();
+  const role = currentRole();
 
   if (route === '/triagem') {
     return (
@@ -53,11 +62,15 @@ function Router() {
   }
 
   if (route.startsWith('/profissional')) {
+    if (!role) return <Redirect to="#/acesso" />;
+    if (role === 'ROLE_PACIENTE') return <Redirect to={homeFor(role)} />;
     const section = route.split('/')[2] || 'dashboard';
     return <ProfessionalDashboard section={section} />;
   }
 
   if (route.startsWith('/paciente')) {
+    if (!role) return <Redirect to="#/acesso" />;
+    if (role !== 'ROLE_PACIENTE') return <Redirect to={homeFor(role)} />;
     return <PatientDashboard />;
   }
 
