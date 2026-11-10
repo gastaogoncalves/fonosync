@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
-import { AudioWaveform, Gamepad2, Network, School, TriangleAlert } from 'lucide-react';
+import { Gamepad2, Network, School, TriangleAlert } from 'lucide-react';
 import Header from '../components/Header';
-import Button from '../components/Button';
 import FeatureRow from '../components/FeatureRow';
 import PhoneticCard from '../components/PhoneticCard';
 import StatsStrip from '../components/StatsStrip';
+import About from '../components/About';
+import Benefits from '../components/Benefits';
+import { buttonClass } from '../components/buttonStyles';
+import Reveal from '../components/Reveal';
 import Footer from '../components/Footer';
 
 const features = [
@@ -39,23 +42,6 @@ const features = [
         tone: 'success',
         title: 'Próxima recomendação',
         text: 'Revisar exercício de fluência antes da próxima sessão.',
-      },
-    },
-  },
-  {
-    icon: AudioWaveform,
-    title: 'Análise Fonética Inteligente',
-    description: 'Envie ou grave áudio, visualize scores por fonema, receba alertas de confiança e valide profissionalmente cada resultado.',
-    progress: {
-      eyebrow: 'Análise do áudio',
-      items: [
-        { label: 'Precisão no fonema /r/', value: 64 },
-        { label: 'Precisão no fonema /s/', value: 88 },
-      ],
-      note: {
-        tone: 'success',
-        title: 'Pronto para validação',
-        text: 'Confira os trechos marcados antes de liberar o relatório.',
       },
     },
   },
@@ -95,6 +81,12 @@ const features = [
   },
 ];
 
+// rola sem mudar o hash, que o app usa como rota
+const scrollToSection = (id) => (e) => {
+  e.preventDefault();
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+};
+
 export default function LandingPage() {
   useEffect(() => {
     document.title = 'FonoSync';
@@ -105,9 +97,8 @@ export default function LandingPage() {
       <Header />
 
       <main>
-        {/* Hero */}
         <section className="bg-mist">
-          <div className="mx-auto grid max-w-360 items-center gap-12 px-18 py-18 lg:grid-cols-2">
+          <div className="mx-auto grid max-w-360 grid-cols-1 items-center gap-12 px-6 py-18 md:px-6 md:px-18 lg:grid-cols-2">
             <div>
               <span className="mb-4 block text-sm font-bold tracking-wider text-primary uppercase">
                 FONOAUDIOLOGIA CONECTADA E ACESSÍVEL
@@ -119,42 +110,55 @@ export default function LandingPage() {
                 Conectamos pacientes, profissionais e avaliações inteligentes para tornar cada jornada terapêutica mais contínua, segura e humana.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row">
-                <Button variant="primary">Experimentar Avaliação</Button>
-                <Button variant="secondary">Conhecer Plataforma</Button>
-              </div>
-              <div className="mt-4 flex gap-6 text-sm font-bold">
-                <a href="#/paciente/entrar" className="text-primary underline-offset-4 decoration-2 hover:underline">
-                  Sou Paciente
-                </a>
-                <a href="#/profissional/entrar" className="text-primary underline-offset-4 decoration-2 hover:underline">
-                  Sou Fonoaudiólogo
-                </a>
+                <a href="#/triagem" className={buttonClass('primary')}>Experimentar Avaliação</a>
+                <a href="#sobre" onClick={scrollToSection('sobre')} className={buttonClass('secondary')}>Conhecer Plataforma</a>
               </div>
             </div>
 
-            <PhoneticCard />
+            <div className="drop-shadow-[0_28px_36px_rgba(13,51,71,0.24)] transition-transform duration-500 lg:[transform:perspective(1000px)_rotateY(-4deg)_rotateX(2deg)_scale(1.08)] lg:hover:[transform:perspective(1000px)_rotateY(-1deg)_rotateX(1deg)_scale(1.08)]">
+              <PhoneticCard />
+            </div>
           </div>
         </section>
 
         <StatsStrip />
 
-        {/* Seções de funcionalidades */}
-        <section className="mx-auto flex max-w-360 flex-col gap-20 px-18 py-20">
+        <About />
+
+        <div className="mx-auto max-w-360 px-6 md:px-18 my-8">
+          <div className="h-[3px] w-full rounded-full bg-slate-200/80" />
+        </div>
+
+        <section className="mx-auto flex max-w-360 flex-col gap-20 px-6 md:px-18 py-20">
           {features.map((feature, index) => (
-            <FeatureRow
+            <Reveal
               key={feature.title}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              progress={feature.progress}
-              reverse={index % 2 === 1}
-            />
+              id={index === 0 ? 'recursos' : undefined}
+              className="scroll-mt-24"
+            >
+              <FeatureRow
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                progress={feature.progress}
+                reverse={index % 2 === 1}
+              />
+            </Reveal>
           ))}
         </section>
 
-        {/* CTA final */}
+        <div className="mx-auto max-w-360 px-6 md:px-18 my-8">
+          <div className="h-[3px] w-full rounded-full bg-slate-200/80" />
+        </div>
+
+        <Benefits />
+
+        <div className="mx-auto max-w-360 px-6 md:px-18 my-8">
+          <div className="h-[3px] w-full rounded-full bg-slate-200/80" />
+        </div>
+
         <section className="bg-mist py-24 text-center">
-          <div className="mx-auto max-w-360 px-18">
+          <Reveal className="mx-auto max-w-360 px-6 md:px-18">
             <h2 className="mb-6 text-3xl text-navy md:text-4xl">
               Uma terapia mais conectada começa com um próximo passo claro.
             </h2>
@@ -162,10 +166,10 @@ export default function LandingPage() {
               Experimente a avaliação digital ou conheça a plataforma completa.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Button variant="primary">Experimentar Avaliação</Button>
-              <Button variant="secondary">Conhecer Plataforma</Button>
+              <a href="#/triagem" className={buttonClass('primary')}>Experimentar Avaliação</a>
+              <a href="#sobre" onClick={scrollToSection('sobre')} className={buttonClass('secondary')}>Conhecer Plataforma</a>
             </div>
-          </div>
+          </Reveal>
         </section>
       </main>
       <Footer />

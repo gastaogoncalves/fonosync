@@ -27,7 +27,7 @@ const scores = [
 
 export default function PhoneticCard() {
   return (
-    <div className="flex items-center justify-center border border-line bg-mist px-10 py-12">
+    <div className="flex items-center justify-center border border-line bg-mist px-4 py-12 sm:px-10">
       <div className="flex w-full max-w-120 flex-col gap-3.5 rounded-[10px] border border-muted/50 bg-surface p-5.5">
         <div className="flex items-start justify-between gap-4">
           <p className="text-sm text-navy">Análise fonética inteligente</p>
@@ -47,9 +47,9 @@ export default function PhoneticCard() {
           ))}
         </div>
 
-        <dl className="flex gap-3">
+        <dl className="flex gap-2 sm:gap-3">
           {scores.map((score) => (
-            <div key={score.label} className="flex flex-1 flex-col-reverse gap-1 bg-mist/50 p-2.5">
+            <div key={score.label} className="flex min-w-0 flex-1 flex-col-reverse gap-1 bg-mist/50 p-2.5">
               <dt className="text-sm text-muted">{score.label}</dt>
               <dd className="font-serif text-3xl text-navy">{score.value}%</dd>
             </div>

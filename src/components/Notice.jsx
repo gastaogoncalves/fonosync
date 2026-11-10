@@ -1,9 +1,10 @@
-import { CircleCheck, Info, TriangleAlert } from 'lucide-react';
+import { CircleAlert, CircleCheck, Info, TriangleAlert } from 'lucide-react';
 
 const tones = {
   success: { icon: CircleCheck, box: 'border-success bg-success/10', iconColor: 'text-success' },
   warning: { icon: TriangleAlert, box: 'border-warning bg-warning/10', iconColor: 'text-warning' },
   info: { icon: Info, box: 'border-primary bg-primary/10', iconColor: 'text-primary' },
+  danger: { icon: CircleAlert, box: 'border-danger bg-danger/10', iconColor: 'text-danger' },
 };
 
 export default function Notice({ tone = 'success', title, children }) {

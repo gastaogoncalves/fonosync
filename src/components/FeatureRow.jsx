@@ -2,9 +2,9 @@ import { ArrowRight } from 'lucide-react';
 import Button from './Button';
 import ProgressCard from './ProgressCard';
 
-export default function FeatureRow({ icon: Icon, title, description, progress, reverse = false }) {
+export default function FeatureRow({ id, icon: Icon, title, description, progress, reverse = false }) {
   return (
-    <div className="grid items-center gap-12 md:grid-cols-2">
+    <div id={id} className="grid scroll-mt-24 items-center gap-12 md:grid-cols-2">
       <div className={`flex flex-col items-start gap-3 ${reverse ? 'md:order-2' : ''}`}>
         <Icon size={28} className="text-navy" aria-hidden="true" />
         <h3 className="text-[32px] leading-tight text-navy">{title}</h3>
