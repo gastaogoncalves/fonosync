@@ -1,10 +1,51 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Filter, UserPlus, FileText, FolderArchive, ChevronRight, X, Save, CheckCircle2, RotateCcw } from 'lucide-react';
+import { api } from '../../services/api';
+
+const STATUS = {
+  ATIVO: { label: 'Em acompanhamento', type: 'acompanhamento' },
+  PRE_CADASTRO: { label: 'Pré-cadastro', type: 'pre-cadastro' },
+  ARQUIVADO: { label: 'Arquivado', type: 'arquivado' },
+};
+
+const emptyForm = {
+  name: '',
+  dateOfBirth: '',
+  phone: '',
+  cpf: '',
+  sex: '',
+  guardianName: '',
+  guardianCpf: '',
+  guardianPhone: '',
+  guardianRelationship: '',
+};
+
+function ageFrom(dateOfBirth) {
+  if (!dateOfBirth) return null;
+  const birth = new Date(`${dateOfBirth}T00:00:00`);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const beforeBirthday =
+    today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+  return beforeBirthday ? age - 1 : age;
+}
+
+function toRow(patient) {
+  const status = STATUS[patient.patientStatus] ?? STATUS.ATIVO;
+  return {
+    ...patient,
+    age: ageFrom(patient.dateOfBirth),
+    phone: patient.contactPatient,
+    status: status.label,
+    statusType: status.type,
+    archived: patient.patientStatus === 'ARQUIVADO',
+  };
+}
 
 export default function Patients() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('todos'); // 'todos', 'acompanhamento', 'atencao', 'arquivados'
-  
+  const [activeTab, setActiveTab] = useState('todos'); // 'todos', 'acompanhamento', 'pre-cadastro', 'arquivados'
+
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -13,88 +54,38 @@ export default function Patients() {
 
   const [filterAgeGroup, setFilterAgeGroup] = useState('todos');
 
-  const [newPatientName, setNewPatientName] = useState('');
-  const [newPatientAge, setNewPatientAge] = useState('');
-  const [newPatientPhone, setNewPatientPhone] = useState('');
+  const [form, setForm] = useState(emptyForm);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const [patients, setPatients] = useState([
-    {
-      id: 1,
-      name: 'Maria Luiza Ferreira',
-      age: 8,
-      lastSession: 'Hoje, 09:00',
-      professional: 'Dra. Renata Lima',
-      status: 'Em acompanhamento',
-      statusType: 'acompanhamento',
-      phone: '(11) 98888-1111',
-      notes: 'Evolução estável na fluência e fonética.',
-      archived: false,
-    },
-    {
-      id: 2,
-      name: 'João Pedro Santos',
-      age: 6,
-      lastSession: '30 set, 16:30',
-      professional: 'Dra. Renata Lima',
-      status: 'Em acompanhamento',
-      statusType: 'acompanhamento',
-      phone: '(11) 97777-2222',
-      notes: 'Boa aderência aos exercícios domiciliares.',
-      archived: false,
-    },
-    {
-      id: 3,
-      name: 'Ana Clara Souza',
-      age: 10,
-      lastSession: '28 set, 14:00',
-      professional: 'Dra. Renata Lima',
-      status: 'Atenção',
-      statusType: 'atencao',
-      phone: '(11) 96666-3333',
-      notes: 'Apresentou oscilação na taxa de fluência.',
-      archived: false,
-    },
-    {
-      id: 4,
-      name: 'Lucas Ribeiro',
-      age: 4,
-      lastSession: '25 set, 11:00',
-      professional: 'Dra. Renata Lima',
-      status: 'Pausado',
-      statusType: 'pausado',
-      phone: '(11) 95555-4444',
-      notes: 'Tratamento pausado temporariamente a pedido dos responsáveis.',
-      archived: false,
-    },
-    {
-      id: 5,
-      name: 'Beatriz Costa',
-      age: 9,
-      lastSession: '15 Ago, 10:00',
-      professional: 'Dra. Renata Lima',
-      status: 'Arquivado',
-      statusType: 'arquivado',
-      phone: '(11) 94444-5555',
-      notes: 'Alta terapêutica concluída com sucesso.',
-      archived: true,
-    },
-  ]);
+  const [patients, setPatients] = useState([]);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    api('/api/paciente')
+      .then((list) => setPatients(list.map(toRow)))
+      .catch((error) => setLoadError(error.message));
+  }, []);
+
+  const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const formAge = ageFrom(form.dateOfBirth);
+  const needsGuardian = formAge !== null && formAge < 18;
 
   const filteredPatients = patients.filter((patient) => {
-    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = patient.name.toLowerCase().includes(term) || (patient.phone ?? '').includes(term);
+
     if (activeTab === 'arquivados') {
       return matchesSearch && patient.archived;
     }
 
-    // Se não estiver na aba de arquivados, ignora os arquivados na listagem padrão
     if (patient.archived) return false;
 
     if (activeTab === 'acompanhamento' && patient.statusType !== 'acompanhamento') return false;
-    if (activeTab === 'atencao' && patient.statusType !== 'atencao') return false;
+    if (activeTab === 'pre-cadastro' && patient.statusType !== 'pre-cadastro') return false;
 
-    if (filterAgeGroup === 'crianca' && patient.age >= 8) return false;
-    if (filterAgeGroup === 'pre-adolescente' && (patient.age < 8 || patient.age > 12)) return false;
+    if (filterAgeGroup === 'crianca' && (patient.age === null || patient.age >= 8)) return false;
+    if (filterAgeGroup === 'pre-adolescente' && (patient.age === null || patient.age < 8 || patient.age > 12)) return false;
 
     return matchesSearch;
   });
@@ -104,48 +95,80 @@ export default function Patients() {
     setShowRecordModal(true);
   };
 
-  const handleToggleArchive = (patientId, e) => {
-    e.stopPropagation();
-    setPatients(patients.map(p => {
-      if (p.id === patientId) {
-        const nextArchived = !p.archived;
-        return { 
-          ...p, 
-          archived: nextArchived, 
-          status: nextArchived ? 'Arquivado' : 'Em acompanhamento',
-          statusType: nextArchived ? 'arquivado' : 'acompanhamento'
-        };
-      }
-      return p;
-    }));
-    setShowRecordModal(false);
+  const replacePatient = (updated) => {
+    const row = toRow(updated);
+    setPatients((current) => current.map((p) => (p.id === row.id ? row : p)));
+    setSelectedPatient(row);
   };
 
-  const handleCreatePatient = (e) => {
-    e.preventDefault();
-    if (!newPatientName.trim()) return;
+  const handleToggleArchive = async (patient, e) => {
+    e.stopPropagation();
+    try {
+      if (patient.archived) {
+        const { id, name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId } = patient;
+        replacePatient(
+          await api(`/api/paciente/update/${id}`, {
+            method: 'PUT',
+            body: { name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId, patientStatus: 'ATIVO' },
+          }),
+        );
+      } else {
+        replacePatient(await api(`/api/paciente/${patient.id}/archive`, { method: 'PATCH' }));
+      }
+      setShowRecordModal(false);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
-    const newEntry = {
-      id: patients.length + 1,
-      name: newPatientName,
-      age: newPatientAge ? Number(newPatientAge) : 7,
-      lastSession: 'Recém-cadastrado',
-      professional: 'Dra. Renata Lima',
-      status: 'Em acompanhamento',
-      statusType: 'acompanhamento',
-      phone: newPatientPhone || 'Não informado',
-      notes: 'Prontuário criado recentemente.',
-      archived: false,
-    };
-
-    setPatients([newEntry, ...patients]);
-    setNewPatientName('');
-    setNewPatientAge('');
-    setNewPatientPhone('');
+  const closeNewPatient = () => {
     setShowNewPatientModal(false);
-    
-    setSuccessNotice(true);
-    setTimeout(() => setSuccessNotice(false), 3000);
+    setForm(emptyForm);
+    setFormError('');
+  };
+
+  const handleCreatePatient = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) return;
+
+    setSaving(true);
+    setFormError('');
+    try {
+      let guardianId = null;
+      if (needsGuardian) {
+        const guardian = await api('/api/guardians', {
+          method: 'POST',
+          body: {
+            name: form.guardianName,
+            cpf: form.guardianCpf,
+            phoneNumber: form.guardianPhone,
+            relationship: form.guardianRelationship,
+          },
+        });
+        guardianId = guardian.id;
+      }
+
+      const created = await api('/api/paciente/register', {
+        method: 'POST',
+        body: {
+          name: form.name.trim(),
+          dateOfBirth: form.dateOfBirth || null,
+          cpfPatient: form.cpf || null,
+          contactPatient: form.phone || null,
+          sex: form.sex || null,
+          guardianId,
+        },
+      });
+
+      setPatients([toRow(created), ...patients]);
+      closeNewPatient();
+      setSuccessNotice(true);
+      setTimeout(() => setSuccessNotice(false), 3000);
+    } catch (error) {
+      setFormError(error.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const activePatientsCount = patients.filter(p => !p.archived).length;
@@ -182,7 +205,7 @@ export default function Patients() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="Nome, responsável ou telefone"
+              placeholder="Nome ou telefone"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-[#172C3A] font-medium focus:outline-none focus:ring-2 focus:ring-[#0284C7]"
@@ -233,14 +256,14 @@ export default function Patients() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('atencao')}
+              onClick={() => setActiveTab('pre-cadastro')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'atencao' 
+                activeTab === 'pre-cadastro' 
                   ? 'bg-amber-600 text-white shadow-sm' 
                   : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
               }`}
             >
-              Atenção
+              Pré-cadastro
             </button>
           </div>
 
@@ -265,8 +288,6 @@ export default function Patients() {
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <th className="py-3.5 px-6">Paciente</th>
                 <th className="py-3.5 px-4">Idade</th>
-                <th className="py-3.5 px-4">Última Sessão</th>
-                <th className="py-3.5 px-4">Profissional</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-6 text-right">Ação</th>
               </tr>
@@ -283,13 +304,11 @@ export default function Patients() {
                       </div>
                       {patient.name}
                     </td>
-                    <td className="py-4 px-4 text-slate-600">{patient.age} anos</td>
-                    <td className="py-4 px-4 text-slate-600">{patient.lastSession}</td>
-                    <td className="py-4 px-4 text-slate-600">{patient.professional}</td>
+                    <td className="py-4 px-4 text-slate-600">{patient.age !== null && `${patient.age} anos`}</td>
                     <td className="py-4 px-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                         patient.statusType === 'acompanhamento' ? 'bg-emerald-50 text-emerald-800' :
-                        patient.statusType === 'atencao' ? 'bg-amber-50 text-amber-800' : 
+                        patient.statusType === 'pre-cadastro' ? 'bg-amber-50 text-amber-800' : 
                         patient.statusType === 'arquivados' || patient.archived ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-700'
                       }`}>
                         {patient.status}
@@ -308,8 +327,8 @@ export default function Patients() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">
-                    Nenhum paciente encontrado nesta categoria.
+                  <td colSpan={4} className="py-8 text-center text-slate-400">
+                    {loadError || 'Nenhum paciente encontrado nesta categoria.'}
                   </td>
                 </tr>
               )}
@@ -377,7 +396,7 @@ export default function Patients() {
               <h3 className="text-lg font-bold font-serif text-[#172C3A]">Cadastrar Novo Paciente</h3>
               <button 
                 type="button" 
-                onClick={() => setShowNewPatientModal(false)}
+                onClick={closeNewPatient}
                 className="text-slate-400 hover:text-slate-700 p-1"
               >
                 <X size={18} />
@@ -391,20 +410,20 @@ export default function Patients() {
                   type="text"
                   required
                   placeholder="Ex: Carlos Eduardo Lima"
-                  value={newPatientName}
-                  onChange={(e) => setNewPatientName(e.target.value)}
+                  value={form.name}
+                  onChange={update('name')}
                   className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold mb-1 text-slate-700">Idade (anos)</label>
+                  <label className="block font-bold mb-1 text-slate-700">Data de nascimento *</label>
                   <input
-                    type="number"
-                    placeholder="Ex: 7"
-                    value={newPatientAge}
-                    onChange={(e) => setNewPatientAge(e.target.value)}
+                    type="date"
+                    required
+                    value={form.dateOfBirth}
+                    onChange={update('dateOfBirth')}
                     className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
                   />
                 </div>
@@ -413,26 +432,104 @@ export default function Patients() {
                   <input
                     type="text"
                     placeholder="(11) 99999-9999"
-                    value={newPatientPhone}
-                    onChange={(e) => setNewPatientPhone(e.target.value)}
+                    value={form.phone}
+                    onChange={update('phone')}
                     className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
                   />
                 </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">CPF</label>
+                  <input
+                    type="text"
+                    placeholder="000.000.000-00"
+                    value={form.cpf}
+                    onChange={update('cpf')}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">Sexo</label>
+                  <select
+                    value={form.sex}
+                    onChange={update('sex')}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7] bg-white"
+                  >
+                    <option value="">Não informado</option>
+                    <option value="FEMININO">Feminino</option>
+                    <option value="MASCULINO">Masculino</option>
+                  </select>
+                </div>
               </div>
+
+              {needsGuardian && (
+                <fieldset className="space-y-3 rounded-xl border border-slate-200 p-3">
+                  <legend className="px-1 font-bold text-slate-700">Responsável (menor de 18 anos)</legend>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold mb-1 text-slate-700">Nome *</label>
+                      <input
+                        type="text"
+                        required
+                        value={form.guardianName}
+                        onChange={update('guardianName')}
+                        className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold mb-1 text-slate-700">CPF *</label>
+                      <input
+                        type="text"
+                        required
+                        value={form.guardianCpf}
+                        onChange={update('guardianCpf')}
+                        className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold mb-1 text-slate-700">Telefone *</label>
+                      <input
+                        type="text"
+                        required
+                        value={form.guardianPhone}
+                        onChange={update('guardianPhone')}
+                        className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold mb-1 text-slate-700">Parentesco *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Mãe, pai, avó..."
+                        value={form.guardianRelationship}
+                        onChange={update('guardianRelationship')}
+                        className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                      />
+                    </div>
+                  </div>
+                </fieldset>
+              )}
+
+              {formError && (
+                <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-2.5 font-bold text-amber-900">
+                  {formError}
+                </p>
+              )}
 
               <div className="pt-3 flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowNewPatientModal(false)}
+                  onClick={closeNewPatient}
                   className="flex-1 py-2.5 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
+                  disabled={saving}
                   className="flex-1 py-2.5 bg-[#0284C7] text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <Save size={15} /> Salvar Prontuário
+                  <Save size={15} /> {saving ? 'Salvando...' : 'Salvar Prontuário'}
                 </button>
               </div>
             </form>
@@ -466,15 +563,15 @@ export default function Patients() {
               <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div>
                   <span className="text-slate-500 block font-bold">Idade:</span>
-                  <span className="font-semibold text-slate-800">{selectedPatient.age} anos</span>
+                  <span className="font-semibold text-slate-800">{selectedPatient.age !== null && `${selectedPatient.age} anos`}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block font-bold">Contato:</span>
                   <span className="font-semibold text-slate-800">{selectedPatient.phone}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block font-bold">Profissional Responsável:</span>
-                  <span className="font-semibold text-slate-800">{selectedPatient.professional}</span>
+                  <span className="text-slate-500 block font-bold">CPF:</span>
+                  <span className="font-semibold text-slate-800">{selectedPatient.cpfPatient}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block font-bold">Status Clínico:</span>
@@ -482,18 +579,12 @@ export default function Patients() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Notas e Observações da Sessão:</label>
-                <div className="p-3 bg-sky-50/60 rounded-xl border border-sky-200 text-sky-950 font-medium">
-                  {selectedPatient.notes}
-                </div>
-              </div>
             </div>
 
             <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
               <button
                 type="button"
-                onClick={(e) => handleToggleArchive(selectedPatient.id, e)}
+                onClick={(e) => handleToggleArchive(selectedPatient, e)}
                 className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
                   selectedPatient.archived 
                     ? 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100' 
