@@ -6,10 +6,9 @@ import { buttonClass } from './buttonStyles';
 import { useA11y } from '../hooks/useA11y';
 
 const links = [
-  { label: 'Plataforma', href: '#plataforma' },
-  { label: 'Soluções', href: '#solucao' },
-  { label: 'Jogos', href: '#jogos' },
-  { label: 'Para Escolas', href: '#escolas' },
+  { label: 'Sobre', href: '#sobre' },
+  { label: 'Recursos', href: '#recursos' },
+  { label: 'Benefícios', href: '#beneficios' },
 ];
 
 export default function Header() {
