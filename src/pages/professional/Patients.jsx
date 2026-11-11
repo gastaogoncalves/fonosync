@@ -21,6 +21,7 @@ const emptyForm = {
   phone: '',
   cpf: '',
   sex: '',
+  cid10: '',
   guardianName: '',
   guardianCpf: '',
   guardianPhone: '',
@@ -161,6 +162,7 @@ export default function Patients() {
       phone: patient.contactPatient ?? '',
       cpf: patient.cpfPatient ?? '',
       sex: patient.sex ?? '',
+      cid10: patient.cid10 ?? '',
     });
     setShowRecordModal(false);
     setShowNewPatientModal(true);
@@ -197,12 +199,13 @@ export default function Patients() {
         cpfPatient: form.cpf || null,
         contactPatient: form.phone || null,
         sex: form.sex || null,
+        cid10: form.cid10.trim() || null,
         guardianId,
       };
 
       if (editingPatient) {
         replacePatient(
-          await updatePatient(editingPatient.id, { ...data, cid10: editingPatient.cid10, patientStatus: editingPatient.patientStatus }),
+          await updatePatient(editingPatient.id, { ...data, patientStatus: editingPatient.patientStatus }),
         );
         showNotice('success', 'Dados do paciente atualizados.');
       } else {
@@ -525,6 +528,16 @@ export default function Patients() {
                     <option value="MASCULINO">Masculino</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">CID-10</label>
+                  <input
+                    type="text"
+                    placeholder="Ex.: F80.9"
+                    value={form.cid10}
+                    onChange={update('cid10')}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                  />
+                </div>
               </div>
 
               {needsGuardian && (
@@ -647,6 +660,10 @@ export default function Patients() {
                 <div>
                   <span className="text-slate-500 block font-bold">Status Clínico:</span>
                   <span className="font-semibold text-emerald-700">{selectedPatient.status}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block font-bold">CID-10:</span>
+                  <span className="font-semibold text-slate-800">{selectedPatient.cid10 || 'Não informado'}</span>
                 </div>
               </div>
 
