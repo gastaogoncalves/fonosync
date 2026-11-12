@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Activity,
+  AlertCircle,
+  ArrowUpRight,
   Calendar,
+  CalendarPlus,
+  Clock,
   FileText,
   Home,
   LogOut,
@@ -16,13 +20,14 @@ import { useA11y } from '../hooks/useA11y';
 import { useAuth } from '../hooks/useAuth';
 import A11yModal from '../components/A11yModal';
 import Button from '../components/Button';
+import Notice from '../components/Notice';
+import StatusBadge from '../components/StatusBadge';
 
 import Patients from './professional/Patients';
 import Tracking from './professional/Tracking';
 import Schedule from './professional/Schedule';
 import Reports from './professional/Reports';
 import SettingsPage from './professional/SettingsPage';
-import { listPatients } from '../services/patientService';
 
 const navItems = [
   { id: 'dashboard', label: 'Início', icon: Home },
@@ -34,7 +39,7 @@ const navItems = [
 ];
 
 const pageInfo = {
-  dashboard: { title: 'Painel do Profissional', subtitle: '' },
+  dashboard: { title: 'Painel do Profissional', subtitle: 'Bem-vinda de volta, Dra. Renata Lima.' },
   pacientes: { title: 'Gestão de Pacientes', subtitle: 'Cadastre, busque e gerencie os prontuários ativos.' },
   acompanhamento: { title: 'Acompanhamento Clínico', subtitle: 'Analise parâmetros fonéticos e registre evoluções.' },
   agenda: { title: 'Agenda de Atendimentos', subtitle: 'Organize sessões presenciais e teleatendimentos.' },
@@ -42,77 +47,93 @@ const pageInfo = {
   configuracoes: { title: 'Configurações do Consultório', subtitle: 'Gerencie seu perfil e credenciais profissionais.' },
 };
 
-function authenticatedName(session) {
-  return session?.name || session?.nome || session?.fullName || session?.user?.name ||
-    session?.professional?.name || session?.email || session?.user?.email || 'Profissional';
-}
+const stats = [
+  { label: 'Pacientes Ativos', value: '8', note: '+2 este mês', tone: 'success', arrow: true },
+  { label: 'Sessões Hoje', value: '4', note: '2 concluídas', tone: 'muted' },
+  { label: 'Evolução Média', value: '74%', note: '+12%', tone: 'success', arrow: true },
+  { label: 'Alertas Clínicos', value: '1', note: 'Revisar Meta', tone: 'warning' },
+];
 
-function DashboardHome({ onNavigate, patients, loading, error }) {
-  const activePatients = patients.filter((patient) => patient.patientStatus !== 'ARQUIVADO');
-  const archivedPatients = patients.length - activePatients.length;
-  const diagnosedPatients = patients.filter((patient) => patient.cid10).length;
-  const stats = [
-    { label: 'Pacientes ativos', value: activePatients.length },
-    { label: 'Prontuários arquivados', value: archivedPatients },
-    { label: 'Com CID-10 registrado', value: diagnosedPatients },
-  ];
+const noteStyles = {
+  success: 'bg-success/10 text-success',
+  warning: 'bg-warning/10 text-warning',
+  muted: 'text-muted',
+};
 
+function DashboardHome({ onNavigate }) {
   return (
     <div className="flex flex-col gap-6 font-sans">
       <div className="flex flex-col justify-between gap-4 rounded-xl border border-line bg-surface p-6 shadow-sm md:flex-row md:items-center">
         <div>
           <h2 className="font-serif text-xl font-bold text-navy">Resumo do seu dia</h2>
-          <p className="mt-1 text-sm text-muted">Acesse os cadastros e prontuários dos pacientes da sua base.</p>
+          <p className="mt-1 text-sm text-muted">
+            Você tem 4 consultas agendadas para hoje e 2 relatórios pendentes de validação.
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <Button variant="primary" onClick={() => onNavigate('pacientes')}>
             <UserPlus size={16} aria-hidden="true" /> Novo paciente
           </Button>
-          <Button variant="secondary" onClick={() => onNavigate('pacientes')}>
-            <FileText size={16} aria-hidden="true" /> Ver prontuários
+          <Button variant="secondary" onClick={() => onNavigate('agenda')}>
+            <CalendarPlus size={16} aria-hidden="true" /> Agendar sessão
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="flex flex-col gap-1 rounded-xl border border-line bg-surface p-4 shadow-sm">
             <span className="text-xs font-bold uppercase text-muted">{stat.label}</span>
-            <span className="font-serif text-2xl font-bold text-navy">{loading ? '—' : stat.value}</span>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className={`font-serif text-2xl font-bold ${stat.tone === 'warning' ? 'text-warning' : 'text-navy'}`}>
+                {stat.value}
+              </span>
+              <span className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold ${noteStyles[stat.tone]}`}>
+                {stat.note}
+                {stat.arrow && <ArrowUpRight size={12} aria-hidden="true" />}
+              </span>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-3">
-          <h3 className="flex items-center gap-2 font-serif text-lg font-bold text-navy">
-            <FileText size={18} className="text-primary" aria-hidden="true" /> Prontuários recentes
-          </h3>
-          <button type="button" onClick={() => onNavigate('pacientes')} className="text-xs font-bold text-primary underline-offset-4 hover:underline">
-            Ver todos
-          </button>
-        </div>
-        {loading ? (
-          <p className="py-4 text-sm text-muted" role="status">Carregando prontuários...</p>
-        ) : error ? (
-          <p className="py-4 text-sm font-bold text-danger" role="alert">{error}</p>
-        ) : patients.length === 0 ? (
-          <p className="py-4 text-sm text-muted">Ainda não há pacientes cadastrados.</p>
-        ) : (
-          <div className="divide-y divide-line">
-            {patients.slice(0, 5).map((patient) => (
-              <button
-                key={patient.id}
-                type="button"
-                onClick={() => onNavigate('pacientes')}
-                className="flex w-full flex-wrap items-center justify-between gap-3 py-3 text-left hover:bg-canvas"
-              >
-                <span className="font-bold text-ink">{patient.name}</span>
-                <span className="text-sm text-muted">{patient.cid10 ? `CID-10 ${patient.cid10}` : 'CID-10 não informado'}</span>
-              </button>
-            ))}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-sm lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-line pb-2">
+            <h3 className="flex items-center gap-2 font-serif text-lg font-bold text-navy">
+              <Clock size={18} className="text-primary" aria-hidden="true" /> Agenda de hoje
+            </h3>
+            <button
+              type="button"
+              onClick={() => onNavigate('agenda')}
+              className="text-xs font-bold text-primary underline-offset-4 hover:underline"
+            >
+              Ver agenda completa →
+            </button>
           </div>
-        )}
+
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-canvas p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full border border-success bg-success/10 text-xs font-bold text-success">
+                ML
+              </div>
+              <div>
+                <p className="text-sm font-bold text-navy">Maria Luiza Ferreira</p>
+                <p className="text-xs text-muted">09:00 · Presencial (Desvio Fonológico)</p>
+              </div>
+            </div>
+            <StatusBadge tone="success">Concluída</StatusBadge>
+          </div>
+        </div>
+
+        <div className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-sm">
+          <h3 className="flex items-center gap-2 border-b border-line pb-2 font-serif text-lg font-bold text-navy">
+            <AlertCircle size={18} className="text-warning" aria-hidden="true" /> Notas e alertas
+          </h3>
+          <Notice tone="warning" title="Ana Clara Souza">
+            Apresentou oscilação na taxa de fluência nas últimas duas sessões.
+          </Notice>
+        </div>
       </div>
     </div>
   );
@@ -122,17 +143,7 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
   const activeSection = section;
   const [showA11y, setShowA11y] = useState(false);
   const { speakPageContent } = useA11y();
-  const { logout, session } = useAuth();
-  const [patients, setPatients] = useState([]);
-  const [patientsLoading, setPatientsLoading] = useState(true);
-  const [patientsError, setPatientsError] = useState('');
-
-  useEffect(() => {
-    listPatients()
-      .then(setPatients)
-      .catch((error) => setPatientsError(error.message))
-      .finally(() => setPatientsLoading(false));
-  }, []);
+  const { logout } = useAuth();
 
   const navigateTo = (newSection) => {
     window.location.assign(`#/profissional/${newSection}`);
@@ -140,13 +151,6 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
 
 
   const info = pageInfo[activeSection] ?? pageInfo.dashboard;
-  const professionalName = authenticatedName(session);
-  const professionalInitials = professionalName
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas font-sans md:flex-row">
@@ -202,12 +206,12 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
 
           <div className="flex items-center gap-3 rounded-md border border-white/15 bg-white/10 p-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-primary font-serif text-xs font-bold text-on-primary">
-              {professionalInitials}
+              RL
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-white">{professionalName}</p>
+              <p className="truncate text-xs font-bold text-white">Dra. Renata Lima</p>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-on-band-muted">
-                <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" /> Conta autenticada
+                <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" /> CRFa 2-19876
               </span>
             </div>
             <button
@@ -227,19 +231,15 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
           <div>
             <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
-            <p className="text-sm text-muted">{activeSection === 'dashboard' ? `Olá, ${professionalName}.` : info.subtitle}</p>
+            <p className="text-sm text-muted">{info.subtitle}</p>
           </div>
           <div className="flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2">
             <Users className="text-primary" size={18} aria-hidden="true" />
-            <span className="text-xs font-bold text-navy">
-              {patientsLoading || patientsError ? '—' : patients.filter((patient) => patient.patientStatus !== 'ARQUIVADO').length} Pacientes Ativos
-            </span>
+            <span className="text-xs font-bold text-navy">8 Pacientes Ativos</span>
           </div>
         </header>
 
-        {activeSection === 'dashboard' && (
-          <DashboardHome onNavigate={navigateTo} patients={patients} loading={patientsLoading} error={patientsError} />
-        )}
+        {activeSection === 'dashboard' && <DashboardHome onNavigate={navigateTo} />}
         {activeSection === 'pacientes' && <Patients />}
         {activeSection === 'acompanhamento' && <Tracking />}
         {activeSection === 'agenda' && <Schedule />}
