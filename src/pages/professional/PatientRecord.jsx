@@ -49,6 +49,9 @@ const tabs = [
   { id: 'avaliacoes', label: 'Avaliações', icon: FileText },
 ];
 
+const sexLabel = { FEMININO: 'Feminino', MASCULINO: 'Masculino' };
+const statusLabel = { ATIVO: 'Em acompanhamento', PRE_CADASTRO: 'Pré-cadastro', ARQUIVADO: 'Arquivado' };
+
 const fieldClass = 'w-full rounded-md border border-line bg-surface px-3 py-2.5 text-sm text-ink';
 
 const pick = (record, fields) => Object.fromEntries(fields.map(({ key }) => [key, record?.[key] ?? '']));
@@ -324,7 +327,14 @@ export default function PatientRecord({ patientId }) {
             <div className="min-w-0 flex-1">
               <h2 className="text-2xl text-navy">{patient.name}</h2>
               <p className="text-sm text-muted">
-                {[age !== null && `${age} anos`, patient.contactPatient, patient.cpfPatient && `CPF ${patient.cpfPatient}`]
+                {[
+                  age !== null && `${age} anos`,
+                  sexLabel[patient.sex],
+                  patient.contactPatient,
+                  patient.cpfPatient && `CPF ${patient.cpfPatient}`,
+                  patient.cid10 && `CID-10 ${patient.cid10}`,
+                  statusLabel[patient.patientStatus],
+                ]
                   .filter(Boolean)
                   .join(' · ')}
               </p>

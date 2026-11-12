@@ -1,31 +1,25 @@
 import { useState } from 'react';
 import {
-  Activity,
-  AlertCircle,
-  ArrowUpRight,
   Calendar,
-  CalendarPlus,
-  Clock,
+  ClipboardList,
   FileText,
   Home,
   LogOut,
   PersonStanding,
   Settings,
-  UserPlus,
   Users,
   Volume2,
 } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import { useA11y } from '../hooks/useA11y';
 import { useAuth } from '../hooks/useAuth';
+import { displayName } from '../services/authService';
 import A11yModal from '../components/A11yModal';
-import Button from '../components/Button';
-import Notice from '../components/Notice';
-import StatusBadge from '../components/StatusBadge';
 
 import Patients from './professional/Patients';
 import PatientRecord from './professional/PatientRecord';
-import Tracking from './professional/Tracking';
+import Records from './professional/Records';
+import Overview from './professional/Home';
 import Schedule from './professional/Schedule';
 import Reports from './professional/Reports';
 import SettingsPage from './professional/SettingsPage';
@@ -33,119 +27,29 @@ import SettingsPage from './professional/SettingsPage';
 const navItems = [
   { id: 'dashboard', label: 'Início', icon: Home },
   { id: 'pacientes', label: 'Pacientes', icon: Users },
-  { id: 'acompanhamento', label: 'Acompanhamento', icon: Activity },
+  { id: 'prontuarios', label: 'Prontuários', icon: ClipboardList },
   { id: 'agenda', label: 'Agenda', icon: Calendar },
   { id: 'relatorios', label: 'Relatórios', icon: FileText },
   { id: 'configuracoes', label: 'Configurações', icon: Settings },
 ];
 
 const pageInfo = {
-  dashboard: { title: 'Painel do Profissional', subtitle: 'Bem-vinda de volta, Dra. Renata Lima.' },
+  dashboard: { title: 'Painel do Profissional', subtitle: 'Visão geral dos pacientes e prontuários.' },
   pacientes: { title: 'Gestão de Pacientes', subtitle: 'Cadastre, busque e gerencie os prontuários ativos.' },
-  acompanhamento: { title: 'Acompanhamento Clínico', subtitle: 'Analise parâmetros fonéticos e registre evoluções.' },
+  prontuarios: { title: 'Prontuários', subtitle: 'Busque um paciente para abrir o prontuário.' },
   agenda: { title: 'Agenda de Atendimentos', subtitle: 'Organize sessões presenciais e teleatendimentos.' },
   relatorios: { title: 'Relatórios e Documentos', subtitle: 'Emita laudos, atestados e exportações acessíveis.' },
   configuracoes: { title: 'Configurações do Consultório', subtitle: 'Gerencie seu perfil e credenciais profissionais.' },
   prontuario: { title: 'Prontuário', subtitle: 'Anamnese, diagnóstico e avaliações do paciente.' },
 };
 
-const stats = [
-  { label: 'Pacientes Ativos', value: '8', note: '+2 este mês', tone: 'success', arrow: true },
-  { label: 'Sessões Hoje', value: '4', note: '2 concluídas', tone: 'muted' },
-  { label: 'Evolução Média', value: '74%', note: '+12%', tone: 'success', arrow: true },
-  { label: 'Alertas Clínicos', value: '1', note: 'Revisar Meta', tone: 'warning' },
-];
-
-const noteStyles = {
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  muted: 'text-muted',
-};
-
-function DashboardHome({ onNavigate }) {
-  return (
-    <div className="flex flex-col gap-6 font-sans">
-      <div className="flex flex-col justify-between gap-4 rounded-xl border border-line bg-surface p-6 shadow-sm md:flex-row md:items-center">
-        <div>
-          <h2 className="font-serif text-xl font-bold text-navy">Resumo do seu dia</h2>
-          <p className="mt-1 text-sm text-muted">
-            Você tem 4 consultas agendadas para hoje e 2 relatórios pendentes de validação.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <Button variant="primary" onClick={() => onNavigate('pacientes')}>
-            <UserPlus size={16} aria-hidden="true" /> Novo paciente
-          </Button>
-          <Button variant="secondary" onClick={() => onNavigate('agenda')}>
-            <CalendarPlus size={16} aria-hidden="true" /> Agendar sessão
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col gap-1 rounded-xl border border-line bg-surface p-4 shadow-sm">
-            <span className="text-xs font-bold uppercase text-muted">{stat.label}</span>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className={`font-serif text-2xl font-bold ${stat.tone === 'warning' ? 'text-warning' : 'text-navy'}`}>
-                {stat.value}
-              </span>
-              <span className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold ${noteStyles[stat.tone]}`}>
-                {stat.note}
-                {stat.arrow && <ArrowUpRight size={12} aria-hidden="true" />}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-sm lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-line pb-2">
-            <h3 className="flex items-center gap-2 font-serif text-lg font-bold text-navy">
-              <Clock size={18} className="text-primary" aria-hidden="true" /> Agenda de hoje
-            </h3>
-            <button
-              type="button"
-              onClick={() => onNavigate('agenda')}
-              className="text-xs font-bold text-primary underline-offset-4 hover:underline"
-            >
-              Ver agenda completa →
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-canvas p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full border border-success bg-success/10 text-xs font-bold text-success">
-                ML
-              </div>
-              <div>
-                <p className="text-sm font-bold text-navy">Maria Luiza Ferreira</p>
-                <p className="text-xs text-muted">09:00 · Presencial (Desvio Fonológico)</p>
-              </div>
-            </div>
-            <StatusBadge tone="success">Concluída</StatusBadge>
-          </div>
-        </div>
-
-        <div className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-sm">
-          <h3 className="flex items-center gap-2 border-b border-line pb-2 font-serif text-lg font-bold text-navy">
-            <AlertCircle size={18} className="text-warning" aria-hidden="true" /> Notas e alertas
-          </h3>
-          <Notice tone="warning" title="Ana Clara Souza">
-            Apresentou oscilação na taxa de fluência nas últimas duas sessões.
-          </Notice>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function ProfessionalDashboard({ section = 'dashboard', recordId }) {
   const activeSection = section;
   const [showA11y, setShowA11y] = useState(false);
   const { speakPageContent } = useA11y();
-  const { logout } = useAuth();
+  const { session, logout } = useAuth();
+  const name = displayName(session);
+  const crfa = session?.profile?.crfa;
 
   const navigateTo = (newSection) => {
     window.location.assign(`#/profissional/${newSection}`);
@@ -167,7 +71,7 @@ export default function ProfessionalDashboard({ section = 'dashboard', recordId 
 
           <nav aria-label="Áreas do profissional" className="flex flex-col gap-1">
             {navItems.map(({ id, label, icon: Icon }) => {
-              const isActive = activeSection === id || (activeSection === 'prontuario' && id === 'pacientes');
+              const isActive = activeSection === id || (activeSection === 'prontuario' && id === 'prontuarios');
               return (
                 <button
                   key={id}
@@ -208,13 +112,11 @@ export default function ProfessionalDashboard({ section = 'dashboard', recordId 
 
           <div className="flex items-center gap-3 rounded-md border border-white/15 bg-white/10 p-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-primary font-serif text-xs font-bold text-on-primary">
-              RL
+              {name.slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-white">Dra. Renata Lima</p>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-on-band-muted">
-                <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" /> CRFa 2-19876
-              </span>
+              <p className="truncate text-xs font-bold text-white">{name}</p>
+              <p className="truncate text-[11px] text-on-band-muted">{crfa ? `CRFa ${crfa}` : 'Fonoaudiólogo(a)'}</p>
             </div>
             <button
               type="button"
@@ -235,16 +137,12 @@ export default function ProfessionalDashboard({ section = 'dashboard', recordId 
             <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
             <p className="text-sm text-muted">{info.subtitle}</p>
           </div>
-          <div className="flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2">
-            <Users className="text-primary" size={18} aria-hidden="true" />
-            <span className="text-xs font-bold text-navy">8 Pacientes Ativos</span>
-          </div>
         </header>
 
-        {activeSection === 'dashboard' && <DashboardHome onNavigate={navigateTo} />}
+        {activeSection === 'dashboard' && <Overview onNavigate={navigateTo} />}
         {activeSection === 'pacientes' && <Patients />}
         {activeSection === 'prontuario' && recordId && <PatientRecord key={recordId} patientId={recordId} />}
-        {activeSection === 'acompanhamento' && <Tracking />}
+        {activeSection === 'prontuarios' && <Records />}
         {activeSection === 'agenda' && <Schedule />}
         {activeSection === 'relatorios' && <Reports />}
         {activeSection === 'configuracoes' && <SettingsPage />}

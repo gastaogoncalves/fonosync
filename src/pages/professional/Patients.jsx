@@ -22,6 +22,8 @@ const emptyForm = {
   phone: '',
   cpf: '',
   sex: '',
+  cid10: '',
+  status: 'ATIVO',
   guardianName: '',
   guardianCpf: '',
   guardianPhone: '',
@@ -152,6 +154,8 @@ export default function Patients() {
       phone: patient.contactPatient ?? '',
       cpf: patient.cpfPatient ?? '',
       sex: patient.sex ?? '',
+      cid10: patient.cid10 ?? '',
+      status: patient.patientStatus === 'ARQUIVADO' ? 'ATIVO' : patient.patientStatus,
     });
     setShowRecordModal(false);
     setShowNewPatientModal(true);
@@ -188,16 +192,20 @@ export default function Patients() {
         cpfPatient: form.cpf || null,
         contactPatient: form.phone || null,
         sex: form.sex || null,
+        cid10: form.cid10.trim() || null,
         guardianId,
       };
 
       if (editingPatient) {
         replacePatient(
-          await updatePatient(editingPatient.id, { ...data, cid10: editingPatient.cid10, patientStatus: editingPatient.patientStatus }),
+          await updatePatient(editingPatient.id, {
+            ...data,
+            patientStatus: editingPatient.archived ? 'ARQUIVADO' : form.status,
+          }),
         );
         showNotice('success', 'Dados do paciente atualizados.');
       } else {
-        const created = await createPatient(data);
+        const created = await createPatient({ ...data, patientStatus: form.status });
         setPatients([toRow(created), ...patients]);
         showNotice('success', 'Paciente cadastrado com sucesso! Prontuário gerado.');
       }
@@ -514,6 +522,28 @@ export default function Patients() {
                     <option value="">Não informado</option>
                     <option value="FEMININO">Feminino</option>
                     <option value="MASCULINO">Masculino</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">CID-10</label>
+                  <input
+                    type="text"
+                    placeholder="F80.0"
+                    value={form.cid10}
+                    onChange={update('cid10')}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">Status</label>
+                  <select
+                    value={form.status}
+                    onChange={update('status')}
+                    disabled={editingPatient?.archived}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7] bg-white"
+                  >
+                    <option value="ATIVO">Em acompanhamento</option>
+                    <option value="PRE_CADASTRO">Pré-cadastro</option>
                   </select>
                 </div>
               </div>
