@@ -52,11 +52,7 @@ function Router() {
   const role = useAuth().session?.role;
 
   if (route === '/triagem') {
-    return (
-      <div className="min-h-screen bg-canvas p-6">
-        <TriagemGame />
-      </div>
-    );
+    return <TriagemGame />;
   }
 
   if (route === '/acesso') {
