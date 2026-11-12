@@ -66,8 +66,8 @@ function Router() {
   if (route.startsWith('/profissional')) {
     if (!role) return <Redirect to="#/acesso" />;
     if (role === 'ROLE_PACIENTE') return <Redirect to={homeFor(role)} />;
-    const section = route.split('/')[2] || 'dashboard';
-    return <ProfessionalDashboard section={section} />;
+    const [, , section = 'dashboard', recordId] = route.split('/');
+    return <ProfessionalDashboard section={section} recordId={recordId} />;
   }
 
   if (route.startsWith('/paciente')) {

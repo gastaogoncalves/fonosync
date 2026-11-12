@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, UserPlus, Pencil, FolderArchive, ChevronRight, X, Save, CheckCircle2, CircleAlert, RotateCcw, Trash2 } from 'lucide-react';
+import { Search, Filter, UserPlus, ClipboardList, Pencil, FolderArchive, ChevronRight, X, Save, CheckCircle2, CircleAlert, RotateCcw, Trash2 } from 'lucide-react';
 import {
   archivePatient,
   createGuardian,
@@ -8,6 +8,7 @@ import {
   listPatients,
   updatePatient,
 } from '../../services/patientService';
+import { ageFrom } from '../../utils/formatters';
 
 const STATUS = {
   ATIVO: { label: 'Em acompanhamento', type: 'acompanhamento' },
@@ -26,16 +27,6 @@ const emptyForm = {
   guardianPhone: '',
   guardianRelationship: '',
 };
-
-function ageFrom(dateOfBirth) {
-  if (!dateOfBirth) return null;
-  const birth = new Date(`${dateOfBirth}T00:00:00`);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const beforeBirthday =
-    today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
-  return beforeBirthday ? age - 1 : age;
-}
 
 function toRow(patient) {
   const status = STATUS[patient.patientStatus] ?? STATUS.ATIVO;
@@ -676,6 +667,12 @@ export default function Patients() {
               </div>
 
               <div className="flex gap-2">
+                <a
+                  href={`#/profissional/prontuario/${selectedPatient.id}`}
+                  className="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 text-xs"
+                >
+                  <ClipboardList size={15} /> Ver prontuário
+                </a>
                 <button
                   type="button"
                   onClick={() => openEditPatient(selectedPatient)}

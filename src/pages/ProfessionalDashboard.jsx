@@ -24,6 +24,7 @@ import Notice from '../components/Notice';
 import StatusBadge from '../components/StatusBadge';
 
 import Patients from './professional/Patients';
+import PatientRecord from './professional/PatientRecord';
 import Tracking from './professional/Tracking';
 import Schedule from './professional/Schedule';
 import Reports from './professional/Reports';
@@ -45,6 +46,7 @@ const pageInfo = {
   agenda: { title: 'Agenda de Atendimentos', subtitle: 'Organize sessões presenciais e teleatendimentos.' },
   relatorios: { title: 'Relatórios e Documentos', subtitle: 'Emita laudos, atestados e exportações acessíveis.' },
   configuracoes: { title: 'Configurações do Consultório', subtitle: 'Gerencie seu perfil e credenciais profissionais.' },
+  prontuario: { title: 'Prontuário', subtitle: 'Anamnese, diagnóstico e avaliações do paciente.' },
 };
 
 const stats = [
@@ -139,7 +141,7 @@ function DashboardHome({ onNavigate }) {
   );
 }
 
-export default function ProfessionalDashboard({ section = 'dashboard' }) {
+export default function ProfessionalDashboard({ section = 'dashboard', recordId }) {
   const activeSection = section;
   const [showA11y, setShowA11y] = useState(false);
   const { speakPageContent } = useA11y();
@@ -165,7 +167,7 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
 
           <nav aria-label="Áreas do profissional" className="flex flex-col gap-1">
             {navItems.map(({ id, label, icon: Icon }) => {
-              const isActive = activeSection === id;
+              const isActive = activeSection === id || (activeSection === 'prontuario' && id === 'pacientes');
               return (
                 <button
                   key={id}
@@ -241,6 +243,7 @@ export default function ProfessionalDashboard({ section = 'dashboard' }) {
 
         {activeSection === 'dashboard' && <DashboardHome onNavigate={navigateTo} />}
         {activeSection === 'pacientes' && <Patients />}
+        {activeSection === 'prontuario' && recordId && <PatientRecord key={recordId} patientId={recordId} />}
         {activeSection === 'acompanhamento' && <Tracking />}
         {activeSection === 'agenda' && <Schedule />}
         {activeSection === 'relatorios' && <Reports />}
