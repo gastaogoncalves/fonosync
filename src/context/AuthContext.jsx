@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
     return next;
   };
 
-  const register = async (email, password, role) => {
-    const next = await authService.register(email, password, role);
+  const register = async (email, password, role, profile) => {
+    const next = await authService.register(email, password, role, profile);
     setSession(next);
     return next;
   };

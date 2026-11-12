@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Eye, EyeOff, Lock, PersonStanding, ShieldCheck, User, UserCheck, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Eye, EyeOff, Lock, PersonStanding, Phone, ShieldCheck, Stethoscope, User, UserCheck, Volume2, VolumeX } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import { useA11y } from '../hooks/useA11y';
 import A11yModal from '../components/A11yModal';
@@ -47,7 +47,7 @@ function TextField({ id, label, icon: Icon, error, hint, trailing, ...props }) {
 export default function AccessArea() {
   const [userType, setUserType] = useState('profissional');
   const [mode, setMode] = useState('login'); // 'login' | 'register'
-  const [form, setForm] = useState({ identifier: '', password: '' });
+  const [form, setForm] = useState({ name: '', crfa: '', phone: '', specialty: '', identifier: '', password: '' });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState(null);
@@ -80,7 +80,10 @@ export default function AccessArea() {
     event.preventDefault();
 
     const email = form.identifier.trim();
+    const registering = mode === 'register';
     const next = {
+      name: registering && form.name.trim().length < 3 ? 'Informe seu nome completo.' : '',
+      crfa: registering && isPro && !form.crfa.trim() ? 'Informe seu CRFa.' : '',
       identifier: !email ? 'Informe seu e-mail.' : !EMAIL.test(email) ? 'Use um e-mail válido.' : '',
       password: !form.password
         ? 'Informe sua senha.'
@@ -90,7 +93,7 @@ export default function AccessArea() {
     };
     setErrors(next);
 
-    const firstInvalid = ['identifier', 'password'].find((key) => next[key]);
+    const firstInvalid = ['name', 'crfa', 'identifier', 'password'].find((key) => next[key]);
     if (firstInvalid) {
       document.getElementById(`acesso-${firstInvalid}`)?.focus();
       return;
@@ -102,7 +105,14 @@ export default function AccessArea() {
       const session =
         mode === 'login'
           ? await login(email, form.password)
-          : await register(email, form.password, isPro ? 'ROLE_FONO' : 'ROLE_PACIENTE');
+          : await register(
+              email,
+              form.password,
+              isPro ? 'ROLE_FONO' : 'ROLE_PACIENTE',
+              isPro
+                ? { name: form.name.trim(), crfa: form.crfa.trim(), phone: form.phone.trim(), specialty: form.specialty.trim() }
+                : { name: form.name.trim(), phone: form.phone.trim() },
+            );
       window.location.hash = homeFor(session.role);
     } catch (error) {
       setNotice({ tone: 'danger', title: mode === 'login' ? 'Não foi possível entrar' : 'Não foi possível criar a conta', text: error.message });
@@ -185,6 +195,54 @@ export default function AccessArea() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            {mode === 'register' && (
+              <>
+                <TextField
+                  id="acesso-name"
+                  label="Nome completo"
+                  icon={User}
+                  type="text"
+                  autoComplete="name"
+                  value={form.name}
+                  onChange={update('name')}
+                  error={errors.name}
+                />
+                {isPro && (
+                  <TextField
+                    id="acesso-crfa"
+                    label="CRFa"
+                    icon={BadgeCheck}
+                    type="text"
+                    value={form.crfa}
+                    onChange={update('crfa')}
+                    error={errors.crfa}
+                    placeholder="2-12345"
+                  />
+                )}
+                <TextField
+                  id="acesso-phone"
+                  label="Telefone / WhatsApp"
+                  icon={Phone}
+                  type="tel"
+                  autoComplete="tel"
+                  value={form.phone}
+                  onChange={update('phone')}
+                  placeholder="(11) 99999-9999"
+                />
+                {isPro && (
+                  <TextField
+                    id="acesso-specialty"
+                    label="Especialidade principal"
+                    icon={Stethoscope}
+                    type="text"
+                    value={form.specialty}
+                    onChange={update('specialty')}
+                    placeholder="Fluência, linguagem, voz..."
+                  />
+                )}
+              </>
+            )}
+
             <TextField
               id="acesso-identifier"
               label={isPro ? 'E-mail profissional' : 'E-mail'}
@@ -194,7 +252,7 @@ export default function AccessArea() {
               value={form.identifier}
               onChange={update('identifier')}
               error={errors.identifier}
-              placeholder={isPro ? 'renata.lima@fonosync.com.br' : 'clara.ferreira@email.com'}
+              placeholder="seu@email.com"
             />
 
             <TextField
