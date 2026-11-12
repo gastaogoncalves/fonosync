@@ -30,6 +30,13 @@ export async function register(email, password, role, profile) {
   return full;
 }
 
+export function updateProfile(session, profile) {
+  saveProfile(session.email, profile);
+  const full = { ...session, profile };
+  saveSession(full);
+  return full;
+}
+
 export function logout() {
   clearSession();
 }

@@ -1,86 +1,68 @@
 import { useState } from 'react';
-import {
-  Award,
-  Calendar,
-  CheckCircle2,
-  Flame,
-  Gamepad2,
-  Home,
-  LogOut,
-  Mail,
-  PersonStanding,
-  Phone,
-  Puzzle,
-  Save,
-  Settings,
-  Star,
-  Target,
-  Trophy,
-  User,
-} from 'lucide-react';
+import { AudioWaveform, ClipboardList, Gamepad2, Home, LogOut, MessageSquare, PersonStanding, School, Settings, Volume2 } from 'lucide-react';
 import logoImg from '../assets/images/ModeloA_Semnome.jpg';
 import A11yModal from '../components/A11yModal';
-import Button from '../components/Button';
 import { buttonClass } from '../components/buttonStyles';
+import { useA11y } from '../hooks/useA11y';
 import { useAuth } from '../hooks/useAuth';
+import { displayName } from '../services/authService';
 
 const navItems = [
   { id: 'inicio', label: 'Início', icon: Home },
-  { id: 'jogos', label: 'Meus Jogos', icon: Gamepad2 },
-  { id: 'consultas', label: 'Consultas', icon: Calendar },
-  { id: 'conquistas', label: 'Conquistas', icon: Award },
-  { id: 'configuracoes', label: 'Configurações', icon: Settings },
+  { id: 'atividades', label: 'Atividades', icon: Gamepad2 },
+  { id: 'conta', label: 'Minha conta', icon: Settings },
 ];
 
-const pageInfo = {
-  inicio: { title: 'Olá, Maria Luiza!', subtitle: 'Pronta para treinar suas missões de hoje?' },
-  jogos: { title: 'Jogos Terapêuticos Prescritos', subtitle: 'Exercícios divertidos recomendados pela Dra. Renata.' },
-  consultas: { title: 'Minhas Consultas e Agendamentos', subtitle: 'Histórico e próximos horários confirmados.' },
-  conquistas: { title: 'Suas Conquistas e Prêmios', subtitle: 'Acompanhe seus selos por praticar os exercícios.' },
-  configuracoes: { title: 'Configurações do Perfil', subtitle: 'Atualize seus dados pessoais e preferências.' },
-};
+const activities = [
+  { icon: ClipboardList, title: 'Formulário de Marcos', age: '0 a 2 anos', desc: 'Perguntas sobre os primeiros marcos da fala.' },
+  { icon: MessageSquare, title: 'Jogo da Palavra', age: '2 a 4 anos', desc: 'Dizer o nome das figuras para identificar trocas de sons.' },
+  { icon: AudioWaveform, title: 'Jogo da Rima', age: '4 a 5 anos', desc: 'Descobrir se duas palavras rimam.' },
+  { icon: School, title: 'Checklist do Professor', age: '6 anos ou mais', desc: 'Observação feita pelo professor em sala.' },
+];
 
-const cardClass = 'rounded-xl border border-line bg-surface shadow-sm';
+const cardClass = 'rounded-md border border-line bg-surface';
 
-function Field({ id, label, icon: Icon, ...props }) {
+function ActivityList() {
   return (
-    <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-bold uppercase text-navy">
-        {label}
-      </label>
-      <div className="flex items-center gap-2 rounded-md border border-line bg-surface p-3 text-sm focus-within:outline-3 focus-within:outline-focus">
-        {Icon && <Icon size={16} className="shrink-0 text-muted" aria-hidden="true" />}
-        <input id={id} className="w-full bg-transparent font-semibold text-ink outline-none" {...props} />
-      </div>
+    <div className="grid gap-4 sm:grid-cols-2">
+      {activities.map(({ icon: Icon, title, age, desc }) => (
+        <div key={title} className={`${cardClass} flex flex-col gap-3 p-5`}>
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Icon size={20} aria-hidden="true" />
+            </span>
+            <div>
+              <p className="font-bold text-navy">{title}</p>
+              <p className="text-sm font-bold text-primary">{age}</p>
+            </div>
+          </div>
+          <p className="flex-1 text-sm text-muted">{desc}</p>
+          <div>
+            <a href="#/triagem" className={buttonClass('primary')}>
+              Começar
+            </a>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState('inicio');
-  const { logout } = useAuth();
   const [showA11y, setShowA11y] = useState(false);
+  const { session, logout } = useAuth();
+  const { isPlayerOpen, speakPageContent } = useA11y();
 
-  const [patientData, setPatientData] = useState({
-    name: 'Maria Luiza Ferreira',
-    age: '8 anos',
-    responsible: 'Clara Ferreira (Mãe)',
-    phone: '(11) 98765-4321',
-    email: 'clara.ferreira@email.com',
-  });
-  const [savedNotice, setSavedNotice] = useState(false);
+  const name = displayName(session);
+  const firstName = session?.profile?.name?.split(' ')[0];
 
-  const handleSaveSettings = (e) => {
-    e.preventDefault();
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+  const pageInfo = {
+    inicio: { title: firstName ? `Olá, ${firstName}!` : 'Olá!', subtitle: 'Sua área de acompanhamento fonoaudiológico.' },
+    atividades: { title: 'Atividades', subtitle: 'Triagens e jogos para praticar a fala.' },
+    conta: { title: 'Minha conta', subtitle: 'Dados usados no seu acesso.' },
   };
-
   const info = pageInfo[activeTab];
-  const bind = (field) => ({
-    value: patientData[field],
-    onChange: (e) => setPatientData({ ...patientData, [field]: e.target.value }),
-  });
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas font-sans md:flex-row">
@@ -116,24 +98,32 @@ export default function PatientDashboard() {
           </nav>
         </div>
 
-        <div className="space-y-3 border-t border-white/15 pt-6">
-          <button
-            type="button"
-            onClick={() => setShowA11y(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-white/30 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
-          >
-            <PersonStanding size={16} aria-hidden="true" /> Acessibilidade
-          </button>
+        <div className="mt-6 space-y-3 border-t border-white/15 pt-6">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setShowA11y(true)}
+              className="flex items-center justify-center gap-1 rounded-md border border-white/30 px-2 py-2 text-[11px] font-bold text-white hover:bg-white/10"
+            >
+              <PersonStanding size={14} className="shrink-0" aria-hidden="true" /> Acessibilidade
+            </button>
+            <button
+              type="button"
+              aria-pressed={isPlayerOpen}
+              onClick={() => speakPageContent()}
+              className="flex items-center justify-center gap-1 rounded-md border border-white/30 px-2 py-2 text-[11px] font-bold text-white hover:bg-white/10"
+            >
+              <Volume2 size={14} className="shrink-0" aria-hidden="true" /> Ouvir página
+            </button>
+          </div>
 
           <div className="flex items-center gap-3 rounded-md border border-white/15 bg-white/10 p-3">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-white/30 bg-primary font-serif text-sm font-bold text-on-primary">
-              ML
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-primary font-serif text-xs font-bold text-on-primary">
+              {name.slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-white">{patientData.name}</p>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-on-band-muted">
-                <span className="size-1.5 animate-pulse rounded-full bg-accent" aria-hidden="true" /> Ativo
-              </span>
+              <p className="truncate text-xs font-bold text-white">{name}</p>
+              <p className="text-[11px] text-on-band-muted">Paciente</p>
             </div>
             <button
               type="button"
@@ -149,130 +139,52 @@ export default function PatientDashboard() {
       </aside>
 
       <main className="min-w-0 flex-1 space-y-6 overflow-y-auto p-4 md:p-8">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-          <div>
-            <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
-            <p className="text-sm text-muted">{info.subtitle}</p>
-          </div>
-          <div className="flex items-center gap-2 rounded-md border border-warning bg-warning/10 px-4 py-2">
-            <Trophy className="text-warning" size={18} aria-hidden="true" />
-            <span className="text-xs font-bold text-navy">120 Pontos acumulados</span>
-          </div>
+        <header className="border-b border-line pb-4">
+          <h1 className="font-serif text-3xl font-bold text-navy">{info.title}</h1>
+          <p className="text-sm text-muted">{info.subtitle}</p>
         </header>
 
         {activeTab === 'inicio' && (
-          <section className="grid gap-6 md:grid-cols-2">
-            <div className={`${cardClass} space-y-4 p-6`}>
-              <h2 className="font-serif text-lg font-bold text-navy">Sua Próxima Consulta</h2>
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-mist p-4">
-                <div>
-                  <p className="text-sm font-bold text-ink">Segunda-feira, 09:00</p>
-                  <p className="text-xs text-muted">Com Dra. Renata Lima</p>
-                </div>
-                <span className="rounded-full border border-primary bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                  Presencial
-                </span>
-              </div>
-            </div>
-
-            <div className={`${cardClass} space-y-4 p-6`}>
-              <h2 className="font-serif text-lg font-bold text-navy">Treino da Semana</h2>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-ink">Jogo da Rima (Nível 2)</span>
-                  <span className="flex items-center gap-1 text-success">
-                    <CheckCircle2 size={14} aria-hidden="true" /> Concluído
-                  </span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-line" aria-hidden="true">
-                  <div className="h-full bg-success" style={{ width: '100%' }} />
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {activeTab === 'jogos' && (
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className={`${cardClass} space-y-3 p-5`}>
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Target size={24} aria-hidden="true" />
-              </div>
-              <h3 className="font-bold text-navy">Caça-Sons: Fonema /r/</h3>
-              <p className="text-xs text-muted">Identifique palavras com o som vibrante.</p>
-              <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
-            </div>
-
-            <div className={`${cardClass} space-y-3 p-5`}>
-              <div className="flex size-12 items-center justify-center rounded-xl bg-warning/10 text-warning">
-                <Puzzle size={24} aria-hidden="true" />
-              </div>
-              <h3 className="font-bold text-navy">Jogo da Rima</h3>
-              <p className="text-xs text-muted">Combine pares de palavras com terminação igual.</p>
-              <a href="#/triagem" className={`${buttonClass('primary')} w-full`}>Jogar agora</a>
-            </div>
-          </section>
-        )}
-
-        {activeTab === 'consultas' && (
-          <section className={`${cardClass} space-y-4 p-6`}>
-            <h2 className="font-serif text-lg font-bold text-navy">Histórico de Atendimentos</h2>
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-mist p-4 text-sm">
+          <>
+            <section className={`${cardClass} flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between`}>
               <div>
-                <p className="font-bold text-navy">Sessão de Avaliação Fonética</p>
-                <p className="text-xs text-muted">04 de Novembro de 2026 - Dra. Renata Lima</p>
+                <h2 className="text-xl text-navy">Atividades de fala</h2>
+                <p className="text-sm text-muted">Triagens e jogos separados por idade, com leitura em voz alta.</p>
               </div>
-              <span className="rounded-full border border-success bg-success/10 px-3 py-1 text-xs font-bold text-success">
-                Realizada
-              </span>
-            </div>
-          </section>
+              <button type="button" onClick={() => setActiveTab('atividades')} className={buttonClass('primary')}>
+                Ver atividades
+              </button>
+            </section>
+            <section className={`${cardClass} flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between`}>
+              <div>
+                <h2 className="text-xl text-navy">Acessibilidade</h2>
+                <p className="text-sm text-muted">Ajuste tamanho do texto, cores, contraste e leitura em voz alta.</p>
+              </div>
+              <button type="button" onClick={() => setShowA11y(true)} className={buttonClass('secondary')}>
+                <PersonStanding size={16} aria-hidden="true" /> Abrir painel
+              </button>
+            </section>
+          </>
         )}
 
-        {activeTab === 'conquistas' && (
-          <section className="grid gap-4 sm:grid-cols-3">
-            <div className={`${cardClass} space-y-2 p-5 text-center`}>
-              <Star className="mx-auto text-warning" size={36} aria-hidden="true" />
-              <h3 className="text-sm font-bold text-navy">Primeira Triagem</h3>
-              <p className="text-xs text-muted">Concluiu o primeiro teste de fala.</p>
-            </div>
-            <div className={`${cardClass} space-y-2 p-5 text-center`}>
-              <Flame className="mx-auto text-warning" size={36} aria-hidden="true" />
-              <h3 className="text-sm font-bold text-navy">7 Dias Seguidos</h3>
-              <p className="text-xs text-muted">Treinou a articulação a semana toda!</p>
-            </div>
-          </section>
-        )}
+        {activeTab === 'atividades' && <ActivityList />}
 
-        {activeTab === 'configuracoes' && (
-          <section className={`${cardClass} max-w-2xl p-6`}>
-            <form onSubmit={handleSaveSettings} className="space-y-4">
-              <Field id="pac-nome" label="Nome do Paciente" icon={User} type="text" {...bind('name')} />
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="pac-idade" label="Idade" type="text" {...bind('age')} />
-                <Field id="pac-responsavel" label="Responsável Legal" type="text" {...bind('responsible')} />
+        {activeTab === 'conta' && (
+          <section className={`${cardClass} max-w-xl p-5`}>
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <dt className="text-sm font-bold text-ink">Nome</dt>
+                <dd className="text-muted">{session?.profile?.name}</dd>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field id="pac-telefone" label="Telefone / WhatsApp" icon={Phone} type="text" {...bind('phone')} />
-                <Field id="pac-email" label="E-mail de Contato" icon={Mail} type="email" {...bind('email')} />
+              <div>
+                <dt className="text-sm font-bold text-ink">E-mail</dt>
+                <dd className="break-all text-muted">{session?.email}</dd>
               </div>
-
-              <div className="flex items-center justify-between border-t border-line pt-4">
-                <span role="status" className="flex items-center gap-1 text-xs font-bold text-success">
-                  {savedNotice && (
-                    <>
-                      <CheckCircle2 size={16} aria-hidden="true" /> Dados atualizados com sucesso!
-                    </>
-                  )}
-                </span>
-
-                <Button variant="primary" type="submit">
-                  <Save size={16} aria-hidden="true" /> Salvar alterações
-                </Button>
+              <div>
+                <dt className="text-sm font-bold text-ink">Telefone</dt>
+                <dd className="text-muted">{session?.profile?.phone}</dd>
               </div>
-            </form>
+            </dl>
           </section>
         )}
       </main>

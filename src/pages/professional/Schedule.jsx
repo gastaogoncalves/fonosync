@@ -7,13 +7,15 @@ import Notice from '../../components/Notice';
 
 const views = ['Semana', 'Mês', 'Lista', 'Disponibilidade'];
 
-const initialWeek = [
-  { day: 'Seg 05', sessions: [{ time: '09:00', patient: 'Maria Luiza', type: 'Presencial' }] },
-  { day: 'Ter 06', sessions: [{ time: '11:30', patient: 'João Pedro', type: 'Presencial' }] },
-  { day: 'Qua 07', sessions: [{ time: '14:00', patient: 'Ana Clara', type: 'A confirmar', pending: true }] },
-  { day: 'Qui 08', sessions: [{ time: '16:30', patient: 'Lucas Ribeiro', type: 'Presencial' }] },
-  { day: 'Sex 09', sessions: [] },
-];
+const today = new Date();
+const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - ((today.getDay() + 6) % 7));
+
+const initialWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'].map((name, index) => {
+  const date = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + index);
+  return { day: `${name} ${String(date.getDate()).padStart(2, '0')}`, sessions: [] };
+});
+
+const monthName = monday.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
 const listColumns = [
   { key: 'day', label: 'Dia' },
@@ -27,9 +29,8 @@ const fieldClass = 'w-full rounded-md border border-muted/60 bg-surface p-3 text
 const labelClass = 'mb-1 block text-xs font-bold uppercase text-ink';
 
 function MonthView({ week }) {
-  // Outubro de 2026: o mesmo mês das sessões de exemplo
-  const first = new Date(2026, 9, 1).getDay();
-  const daysInMonth = new Date(2026, 10, 0).getDate();
+  const first = new Date(monday.getFullYear(), monday.getMonth(), 1).getDay();
+  const daysInMonth = new Date(monday.getFullYear(), monday.getMonth() + 1, 0).getDate();
   const sessionsByDay = {};
   week.forEach((column) => {
     sessionsByDay[Number(column.day.split(' ')[1])] = column.sessions;
@@ -39,7 +40,7 @@ function MonthView({ week }) {
   return (
     <div className="overflow-x-auto border border-line bg-surface">
       <div className="min-w-160">
-        <h2 className="border-b border-line p-3 font-sans text-sm font-bold text-navy">Outubro de 2026</h2>
+        <h2 className="border-b border-line p-3 font-sans text-sm font-bold text-navy first-letter:uppercase">{monthName}</h2>
         <div className="grid grid-cols-7 text-xs">
           {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((name) => (
             <div key={name} className="border-b border-line bg-mist p-2 text-center font-bold uppercase text-navy">
@@ -71,7 +72,7 @@ function MonthView({ week }) {
 }
 
 function AvailabilityView({ week }) {
-  const [blocked, setBlocked] = useState(() => new Set(['4-14:00', '4-15:00', '4-16:00', '4-17:00']));
+  const [blocked, setBlocked] = useState(() => new Set());
   const [saved, setSaved] = useState(false);
 
   const toggle = (key) => {

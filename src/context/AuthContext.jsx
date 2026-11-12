@@ -24,11 +24,15 @@ export function AuthProvider({ children }) {
     return next;
   };
 
+  const updateProfile = (profile) => {
+    setSession((current) => authService.updateProfile(current, profile));
+  };
+
   const logout = () => {
     authService.logout();
     setSession(null);
     window.location.hash = '#/';
   };
 
-  return <AuthContext.Provider value={{ session, login, register, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ session, login, register, updateProfile, logout }}>{children}</AuthContext.Provider>;
 }
