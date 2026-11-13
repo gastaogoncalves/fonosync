@@ -18,14 +18,16 @@ export function AuthProvider({ children }) {
     return next;
   };
 
-  const register = async (email, password, role, profile) => {
-    const next = await authService.register(email, password, role, profile);
+  const register = async (email, password, role) => {
+    const next = await authService.register(email, password, role);
     setSession(next);
     return next;
   };
 
-  const updateProfile = (profile) => {
-    setSession((current) => authService.updateProfile(current, profile));
+  const updateSession = (data) => {
+    const next = authService.updateCurrentSession(data);
+    setSession(next);
+    return next;
   };
 
   const logout = () => {
@@ -34,5 +36,9 @@ export function AuthProvider({ children }) {
     window.location.hash = '#/';
   };
 
-  return <AuthContext.Provider value={{ session, login, register, updateProfile, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ session, login, register, updateSession, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
