@@ -8,6 +8,8 @@ import {
   listPatients,
   updatePatient,
 } from '../../services/patientService';
+import PatientRecordModal from './PatientRecordModal';
+import { formatCPF, formatPhone } from '../../utils/formatters';
 
 const STATUS = {
   ATIVO: { label: 'Em acompanhamento', type: 'acompanhamento' },
@@ -21,6 +23,7 @@ const emptyForm = {
   phone: '',
   cpf: '',
   sex: '',
+  cid10: '',
   guardianName: '',
   guardianCpf: '',
   guardianPhone: '',
@@ -49,7 +52,7 @@ function toRow(patient) {
   };
 }
 
-export default function Patients() {
+export default function Patients({ onOpenProntuario }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('todos'); // 'todos', 'acompanhamento', 'pre-cadastro', 'arquivados'
 
@@ -106,8 +109,12 @@ export default function Patients() {
   });
 
   const handleOpenRecord = (patient) => {
-    setSelectedPatient(patient);
-    setShowRecordModal(true);
+    if (onOpenProntuario) {
+      onOpenProntuario(patient);
+    } else {
+      setSelectedPatient(patient);
+      setShowRecordModal(true);
+    }
   };
 
   const replacePatient = (updated) => {
@@ -161,6 +168,7 @@ export default function Patients() {
       phone: patient.contactPatient ?? '',
       cpf: patient.cpfPatient ?? '',
       sex: patient.sex ?? '',
+      cid10: patient.cid10 ?? '',
     });
     setShowRecordModal(false);
     setShowNewPatientModal(true);
@@ -191,18 +199,20 @@ export default function Patients() {
         guardianId = guardian.id;
       }
 
+      const isMinorPatient = formAge !== null && formAge < 18;
       const data = {
         name: form.name.trim(),
         dateOfBirth: form.dateOfBirth || null,
-        cpfPatient: form.cpf || null,
+        cpfPatient: isMinorPatient ? null : (form.cpf ? form.cpf.trim() : null),
         contactPatient: form.phone || null,
         sex: form.sex || null,
+        cid10: form.cid10.trim() || null,
         guardianId,
       };
 
       if (editingPatient) {
         replacePatient(
-          await updatePatient(editingPatient.id, { ...data, cid10: editingPatient.cid10, patientStatus: editingPatient.patientStatus }),
+          await updatePatient(editingPatient.id, { ...data, patientStatus: editingPatient.patientStatus }),
         );
         showNotice('success', 'Dados do paciente atualizados.');
       } else {
@@ -223,22 +233,6 @@ export default function Patients() {
 
   return (
     <div className="space-y-6 font-sans">
-      
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold font-serif text-[#172C3A] flex items-center gap-2">
-            Gestão de Pacientes
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">Cadastre, busque e gerencie os prontuários ativos e arquivados.</p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-white border border-slate-300 text-[#172C3A] text-xs font-bold rounded-xl flex items-center gap-2 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[#0284C7]" /> {activePatientsCount} Pacientes Ativos
-          </div>
-        </div>
-      </div>
-
       <div role="status">
         {notice?.tone === 'success' && (
           <div className="p-3.5 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 flex items-center gap-3 text-xs shadow-sm">
@@ -359,14 +353,18 @@ export default function Patients() {
                 </tr>
               ) : filteredPatients.length > 0 ? (
                 filteredPatients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-4 px-6 font-bold flex items-center gap-3">
+                  <tr
+                    key={patient.id}
+                    onClick={() => handleOpenRecord(patient)}
+                    className="hover:bg-sky-50/60 transition-colors cursor-pointer group"
+                  >
+                    <td className="py-4 px-6 font-bold flex items-center gap-3 group-hover:text-[#0284C7] transition-colors">
                       <div className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border shrink-0 ${
                         patient.archived ? 'bg-slate-200 text-slate-600 border-slate-300' : 'bg-sky-100 text-[#0284C7] border-sky-200'
                       }`}>
                         {patient.name.slice(0, 2).toUpperCase()}
                       </div>
-                      {patient.name}
+                      <span>{patient.name}</span>
                     </td>
                     <td className="py-4 px-4 text-slate-600">{patient.age !== null && `${patient.age} anos`}</td>
                     <td className="py-4 px-4">
@@ -381,8 +379,11 @@ export default function Patients() {
                     <td className="py-4 px-6 text-right">
                       <button
                         type="button"
-                        onClick={() => handleOpenRecord(patient)}
-                        className="text-[#0284C7] hover:underline font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenRecord(patient);
+                        }}
+                        className="text-[#0284C7] group-hover:underline font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
                       >
                         {patient.archived ? 'Restaurar / Ver' : 'Abrir Prontuário'} <ChevronRight size={14} />
                       </button>
@@ -503,16 +504,22 @@ export default function Patients() {
                     className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
                   />
                 </div>
-                <div>
-                  <label className="block font-bold mb-1 text-slate-700">CPF</label>
-                  <input
-                    type="text"
-                    placeholder="000.000.000-00"
-                    value={form.cpf}
-                    onChange={update('cpf')}
-                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
-                  />
-                </div>
+                {formAge !== null && formAge < 18 ? (
+                  <div className="col-span-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 flex items-center gap-2">
+                    <span>🛡️ <strong>Proteção de Menores (LGPD):</strong> Por segurança e privacidade da criança, não solicitamos CPF do menor de idade. Apenas o responsável legal possui CPF registrado.</span>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block font-bold mb-1 text-slate-700">CPF do Paciente Adulto</label>
+                    <input
+                      type="text"
+                      placeholder="000.000.000-00"
+                      value={form.cpf}
+                      onChange={(e) => setForm({ ...form, cpf: formatCPF(e.target.value) })}
+                      className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block font-bold mb-1 text-slate-700">Sexo</label>
                   <select
@@ -524,6 +531,16 @@ export default function Patients() {
                     <option value="FEMININO">Feminino</option>
                     <option value="MASCULINO">Masculino</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block font-bold mb-1 text-slate-700">CID-10</label>
+                  <input
+                    type="text"
+                    placeholder="Ex.: F80.9"
+                    value={form.cid10}
+                    onChange={update('cid10')}
+                    className="w-full p-2.5 border border-slate-300 rounded-xl font-medium focus:ring-2 focus:ring-[#0284C7]"
+                  />
                 </div>
               </div>
 
@@ -609,91 +626,14 @@ export default function Patients() {
       )}
 
       {showRecordModal && selectedPatient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-300 p-6 shadow-2xl space-y-4 text-[#172C3A]">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-sky-100 text-[#0284C7] font-bold text-sm flex items-center justify-center border border-sky-200">
-                  {selectedPatient.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold font-serif text-[#172C3A]">{selectedPatient.name}</h3>
-                  <p className="text-xs text-slate-500">{selectedPatient.archived ? 'Prontuário Arquivado' : 'Prontuário Clínico Ativo'}</p>
-                </div>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => setShowRecordModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                <div>
-                  <span className="text-slate-500 block font-bold">Idade:</span>
-                  <span className="font-semibold text-slate-800">{selectedPatient.age !== null && `${selectedPatient.age} anos`}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block font-bold">Contato:</span>
-                  <span className="font-semibold text-slate-800">{selectedPatient.phone}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block font-bold">CPF:</span>
-                  <span className="font-semibold text-slate-800">{selectedPatient.cpfPatient}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block font-bold">Status Clínico:</span>
-                  <span className="font-semibold text-emerald-700">{selectedPatient.status}</span>
-                </div>
-              </div>
-
-            </div>
-
-            <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleToggleArchive(selectedPatient)}
-                  className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border ${
-                    selectedPatient.archived
-                      ? 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100'
-                      : 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100'
-                  }`}
-                >
-                  {selectedPatient.archived ? <RotateCcw size={14} /> : <FolderArchive size={14} />}
-                  {selectedPatient.archived ? 'Restaurar Paciente' : 'Arquivar Prontuário'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(selectedPatient)}
-                  className="px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-rose-300 text-rose-800 bg-rose-50 hover:bg-rose-100"
-                >
-                  <Trash2 size={14} /> Excluir
-                </button>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => openEditPatient(selectedPatient)}
-                  className="px-4 py-2 border border-slate-300 rounded-xl font-bold text-slate-700 hover:bg-slate-100 flex items-center gap-1.5 cursor-pointer text-xs"
-                >
-                  <Pencil size={15} /> Editar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowRecordModal(false)}
-                  className="px-5 py-2 bg-[#0284C7] text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm cursor-pointer text-xs"
-                >
-                  Fechar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PatientRecordModal
+          patient={selectedPatient}
+          isOpen={showRecordModal}
+          onClose={() => setShowRecordModal(false)}
+          onEdit={openEditPatient}
+          onToggleArchive={handleToggleArchive}
+          onDelete={handleDelete}
+        />
       )}
 
     </div>
