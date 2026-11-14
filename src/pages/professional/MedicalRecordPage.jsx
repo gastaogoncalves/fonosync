@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   Activity,
   AlertCircle,
+  Archive,
   Calendar,
   CheckCircle,
   CheckCircle2,
@@ -16,6 +17,7 @@ import {
   Paperclip,
   Pencil,
   Plus,
+  RotateCcw,
   Save,
   Search,
   Sparkles,
@@ -27,6 +29,7 @@ import {
   X,
 } from 'lucide-react';
 import { getGuardianById } from '../../services/guardianService';
+import { archivePatient, deletePatient, updatePatient } from '../../services/patientService';
 import {
   createAnamnesis,
   getAnamnesesByPatient,
@@ -524,6 +527,38 @@ export default function MedicalRecordPage({
     });
   };
 
+  const isArchived = patient?.patientStatus === 'ARQUIVADO';
+
+  const handleToggleArchive = async () => {
+    try {
+      if (isArchived) {
+        const { id, name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId } = patient;
+        await updatePatient(id, { name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId, patientStatus: 'ATIVO' });
+        patient.patientStatus = 'ATIVO';
+        showFeedback('success', `${patient.name} foi restaurado para os pacientes ativos.`);
+      } else {
+        await archivePatient(patient.id);
+        patient.patientStatus = 'ARQUIVADO';
+        showFeedback('success', `Prontuário de ${patient.name} arquivado com sucesso.`);
+      }
+    } catch (err) {
+      showFeedback('danger', err.message || 'Erro ao alterar status de arquivamento.');
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    if (!window.confirm(`Tem certeza que deseja excluir permanentemente o paciente ${patient.name}? Essa ação não pode ser desfeita.`)) {
+      return;
+    }
+    try {
+      await deletePatient(patient.id);
+      alert(`Paciente ${patient.name} excluído com sucesso.`);
+      if (onNavigate) onNavigate('pacientes');
+    } catch (err) {
+      showFeedback('danger', err.message || 'Erro ao excluir paciente.');
+    }
+  };
+
   return (
     <div className="space-y-6 font-sans">
       {/* ============================================================== */}
@@ -596,12 +631,25 @@ export default function MedicalRecordPage({
 
         <button
           type="button"
-          onClick={() => {
-            if (onNavigate) onNavigate('acompanhamento');
-          }}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold shadow-2xs transition cursor-pointer"
+          onClick={handleToggleArchive}
+          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold border shadow-2xs transition cursor-pointer ${
+            isArchived
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
+              : 'bg-amber-50 border-amber-300 text-amber-800 hover:bg-amber-100'
+          }`}
+          title={isArchived ? 'Restaurar paciente para ativos' : 'Arquivar prontuário do paciente'}
         >
-          <Mic size={15} className="text-[#0284C7]" /> Análise Fonética
+          {isArchived ? <RotateCcw size={15} /> : <Archive size={15} />}
+          {isArchived ? 'Restaurar Paciente' : 'Arquivar Prontuário'}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDeletePatient}
+          className="flex items-center gap-1.5 px-3.5 py-2.5 bg-rose-50 border border-rose-300 hover:bg-rose-100 text-rose-800 rounded-xl text-xs font-bold shadow-2xs transition cursor-pointer ml-auto"
+          title="Excluir paciente permanentemente"
+        >
+          <Trash2 size={15} /> Excluir Paciente
         </button>
       </div>
 
