@@ -13,103 +13,11 @@ import {
 } from 'lucide-react';
 import { listPatients } from '../../services/patientService';
 
-const initialAppointments = [
-  {
-    id: 'ag-1',
-    patientId: 'demo-1',
-    patientName: 'Ana Rita Costa',
-    patientAge: 5,
-    date: '2025-03-19',
-    time: '08:00',
-    duration: 45,
-    therapyType: 'Terapia de Linguagem e Fala',
-    modality: 'Presencial',
-    status: 'Confirmada', // 'Agendada' | 'Confirmada' | 'Realizada' | 'Cancelada'
-    sessionDone: null,
-  },
-  {
-    id: 'ag-2',
-    patientId: 'demo-2',
-    patientName: 'Carlos Silva',
-    patientAge: 42,
-    date: '2025-03-19',
-    time: '09:00',
-    duration: 60,
-    therapyType: 'Avaliação de Disfagia Orofaríngea',
-    modality: 'Presencial',
-    status: 'Confirmada',
-    sessionDone: null,
-  },
-  {
-    id: 'ag-3',
-    patientId: 'demo-3',
-    patientName: 'Maria Luiza Ferreira',
-    patientAge: 7,
-    date: '2025-03-19',
-    time: '10:30',
-    duration: 50,
-    therapyType: 'Sessão de Fluência da Fala (Gagueira)',
-    modality: 'Presencial',
-    status: 'Realizada',
-    sessionDone: {
-      evolucao: 'Boa participação. Trabalhadas técnicas de controle de velocidade e respiração custo-diafragmática.',
-      ponto_melhora: 'Manter exercícios respiratórios em casa com apoio dos pais.',
-      dataRegistro: '2025-03-19 11:25',
-    },
-  },
-  {
-    id: 'ag-4',
-    patientId: 'demo-4',
-    patientName: 'Patrícia Gomes',
-    patientAge: 29,
-    date: '2025-03-19',
-    time: '14:00',
-    duration: 45,
-    therapyType: 'Voz Profissional e Aquecimento Vocal',
-    modality: 'Teleatendimento',
-    status: 'Agendada',
-    sessionDone: null,
-  },
-  {
-    id: 'ag-5',
-    patientId: 'demo-5',
-    patientName: 'João Pedro Alves',
-    patientAge: 12,
-    date: '2025-03-19',
-    time: '15:30',
-    duration: 45,
-    therapyType: 'Dislalia Funcional e Trocas Articulatórias',
-    modality: 'Presencial',
-    status: 'Agendada',
-    sessionDone: null,
-  },
-  {
-    id: 'ag-6',
-    patientId: 'demo-6',
-    patientName: 'Valentina Souza',
-    patientAge: 8,
-    date: '2025-03-20',
-    time: '09:30',
-    duration: 45,
-    therapyType: 'Desenvolvimento Linguístico',
-    modality: 'Presencial',
-    status: 'Agendada',
-    sessionDone: null,
-  },
-  {
-    id: 'ag-7',
-    patientId: 'demo-7',
-    patientName: 'Lucas Gabriel Lima',
-    patientAge: 6,
-    date: '2025-03-20',
-    time: '14:00',
-    duration: 50,
-    therapyType: 'Consciência Fonológica',
-    modality: 'Presencial',
-    status: 'Confirmada',
-    sessionDone: null,
-  },
-];
+const today = new Date();
+const todayIso = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+const todayLabel = today.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+const initialAppointments = [];
 
 export default function Schedule({ onNavigate, onSelectPatient }) {
   const [view, setView] = useState('Hoje'); // 'Hoje' | 'Semana' | 'Lista'
@@ -132,7 +40,7 @@ export default function Schedule({ onNavigate, onSelectPatient }) {
   const [newAgendamento, setNewAgendamento] = useState({
     patientName: '',
     patientId: '',
-    date: '2025-03-19',
+    date: todayIso,
     time: '11:00',
     duration: 45,
     therapyType: 'Terapia de Linguagem',
@@ -237,8 +145,7 @@ export default function Schedule({ onNavigate, onSelectPatient }) {
     }
   };
 
-  // Filtro por dia: Hoje = '2025-03-19'
-  const todayAppts = appointments.filter((a) => a.date === '2025-03-19');
+  const todayAppts = appointments.filter((a) => a.date === todayIso);
 
   return (
     <div className="space-y-6 font-sans">
@@ -300,7 +207,7 @@ export default function Schedule({ onNavigate, onSelectPatient }) {
             <ChevronLeft size={16} />
           </button>
           <span className="text-xs font-bold font-serif text-[#172C3A]">
-            Quarta-feira, 19 de março de 2025
+            <span className="first-letter:uppercase inline-block">{todayLabel}</span>
           </span>
           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-[#0284C7]">Hoje</span>
           <button

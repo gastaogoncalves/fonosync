@@ -3,9 +3,6 @@ import { useGoogleLogin } from '@react-oauth/google';
 import {
   ArrowRight,
   Baby,
-  Building2,
-  CheckCircle2,
-  ChevronRight,
   Eye,
   EyeOff,
   FileBadge,
@@ -28,7 +25,6 @@ import { useA11y } from '../hooks/useA11y';
 import A11yModal from '../components/A11yModal';
 import InfoDialog from '../components/InfoDialog';
 import Notice from '../components/Notice';
-import { buttonClass } from '../components/buttonStyles';
 import { INFO_PAGES } from '../utils/constants';
 import { useAuth } from '../hooks/useAuth';
 import { homeFor } from '../services/authService';
@@ -235,7 +231,7 @@ export default function AccessArea() {
             ? loginRole === 'profissional'
               ? 'ROLE_FONO'
               : 'ROLE_PACIENTE'
-            : role === 'fono'
+            : registerCategory === 'fonoaudiologo'
             ? 'ROLE_FONO'
             : 'ROLE_PACIENTE';
 

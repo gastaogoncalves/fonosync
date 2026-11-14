@@ -1,31 +1,23 @@
 import { useEffect, useState } from 'react';
 import {
-  Activity,
   AlertCircle,
   Archive,
-  Calendar,
   CheckCircle,
   CheckCircle2,
   ChevronDown,
   Clock,
-  Download,
   FileCheck2,
   FileEdit,
   FileText,
-  HeartHandshake,
   Mic,
   Paperclip,
   Pencil,
   Plus,
   RotateCcw,
   Save,
-  Search,
-  Sparkles,
   Stethoscope,
   Trash2,
   UploadCloud,
-  User,
-  Users,
   X,
 } from 'lucide-react';
 import { getGuardianById } from '../../services/guardianService';
@@ -58,9 +50,7 @@ export default function MedicalRecordPage({
   onNavigate,
 }) {
   // Paciente Ativo
-  const [activePatientId, setActivePatientId] = useState(
-    selectedPatientId || patients[0]?.id || null
-  );
+  const activePatientId = selectedPatientId || patients[0]?.id || null;
 
   // Tab ativa: 'historico' | 'avaliacoes' | 'diagnostico' | 'anamnese' | 'anexos'
   const [activeTab, setActiveTab] = useState('historico');
@@ -70,11 +60,10 @@ export default function MedicalRecordPage({
 
   // Responsável (carregado via API)
   const [guardian, setGuardian] = useState(null);
-  const [loadingGuardian, setLoadingGuardian] = useState(false);
 
   // Anamnese
   const [anamneses, setAnamneses] = useState([]);
-  const [loadingAnamnese, setLoadingAnamnese] = useState(false);
+  const [loadingAnamnese, setLoadingAnamnese] = useState(true);
   const [isEditingAnamnese, setIsEditingAnamnese] = useState(false);
   const [anamneseForm, setAnamneseForm] = useState({
     mainComplaint: '',
@@ -86,7 +75,7 @@ export default function MedicalRecordPage({
 
   // Diagnóstico
   const [diagnostics, setDiagnostics] = useState([]);
-  const [loadingDiag, setLoadingDiag] = useState(false);
+  const [loadingDiag, setLoadingDiag] = useState(true);
   const [isEditingDiag, setIsEditingDiag] = useState(false);
   const [diagForm, setDiagForm] = useState({
     speechDiagnosis: '',
@@ -99,7 +88,7 @@ export default function MedicalRecordPage({
 
   // Avaliações
   const [evaluations, setEvaluations] = useState([]);
-  const [loadingEval, setLoadingEval] = useState(false);
+  const [loadingEval, setLoadingEval] = useState(true);
   const [showNewEvalModal, setShowNewEvalModal] = useState(false);
   const [viewEvalDetail, setViewEvalDetail] = useState(null);
   const [evalForm, setEvalForm] = useState({
@@ -112,60 +101,17 @@ export default function MedicalRecordPage({
 
   // Anexos
   const [attachments, setAttachments] = useState([]);
-  const [loadingAtt, setLoadingAtt] = useState(false);
+  const [loadingAtt, setLoadingAtt] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadDesc, setUploadDesc] = useState('');
   const [uploading, setUploading] = useState(false);
 
   // Histórico de Sessões / Evoluções Clínicas
-  const [sessions, setSessions] = useState([
-    {
-      id: 'sess-1',
-      date: '2025-03-14',
-      sessionNumber: 24,
-      status: 'Realizada',
-      evolution:
-        'Paciente apresentou redução significativa das disfluências em leitura em voz alta. Utilizou técnicas de controle de velocidade com bom desempenho.',
-      improvementPoint:
-        'Trabalhar fluência em situações de conversação espontânea e maior pressão comunicativa.',
-      tags: ['Fluência', 'Leitura em voz alta', 'Controle de velocidade'],
-    },
-    {
-      id: 'sess-2',
-      date: '2025-03-07',
-      sessionNumber: 23,
-      status: 'Realizada',
-      evolution:
-        'Boa participação. Introduzidas atividades de respiração diafragmática. Frequência de bloqueios diminuiu 30% em relação à sessão anterior.',
-      improvementPoint:
-        'Continuar trabalho de respiração associada ao início da fala.',
-      tags: ['Respiração', 'Bloqueios'],
-    },
-    {
-      id: 'sess-3',
-      date: '2025-02-28',
-      sessionNumber: 22,
-      status: 'Realizada',
-      evolution:
-        'Sessão focada em dessensibilização da ansiedade comunicativa. Paciente verbalizou maior confiança ao falar com colegas na escola.',
-      improvementPoint:
-        'Expandir situações de comunicação fora da clínica.',
-      tags: ['Ansiedade comunicativa', 'Aspecto emocional'],
-    },
-    {
-      id: 'sess-4',
-      date: '2025-03-21',
-      sessionNumber: 25,
-      status: 'Agendada',
-      evolution: 'Sessão ainda não realizada.',
-      improvementPoint: '',
-      tags: [],
-    },
-  ]);
+  const [sessions, setSessions] = useState([]);
   const [showNewSessionModal, setShowNewSessionModal] = useState(false);
   const [sessionForm, setSessionForm] = useState({
-    sessionNumber: 25,
+    sessionNumber: 1,
     date: new Date().toISOString().split('T')[0],
     evolution: '',
     improvementPoint: '',
@@ -181,30 +127,18 @@ export default function MedicalRecordPage({
     setTimeout(() => setNotice(null), 4000);
   };
 
-  // Sincroniza se selectedPatientId externo mudar
-  useEffect(() => {
-    if (selectedPatientId && selectedPatientId !== activePatientId) {
-      setActivePatientId(selectedPatientId);
-    }
-  }, [selectedPatientId]);
-
   // Carrega os dados quando o paciente ativo muda
   useEffect(() => {
     if (!patient) return;
 
     // 1. Carrega dados do Responsável se menor ou se tiver guardianId
     if (patient.guardianId) {
-      setLoadingGuardian(true);
       getGuardianById(patient.guardianId)
         .then((data) => setGuardian(data))
-        .catch(() => setGuardian(null))
-        .finally(() => setLoadingGuardian(false));
-    } else {
-      setGuardian(null);
+        .catch(() => setGuardian(null));
     }
 
     // 2. Carrega Anamneses
-    setLoadingAnamnese(true);
     getAnamnesesByPatient(patient.id)
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
@@ -219,12 +153,11 @@ export default function MedicalRecordPage({
           });
         } else {
           setAnamneseForm({
-            mainComplaint: 'Dificuldade na fala e trocas fonéticas relatadas pela família.',
-            familyHistory: 'Sim - tio paterno com histórico de disfluência.',
-            symptomOnset: 'Aproximadamente aos 5 anos de idade.',
-            languageDevelopment: 'Desenvolvimento geral dentro do esperado.',
-            additionalObservations:
-              'Paciente comunicativa, frequenta escola regular. Família colaborativa e engajada no tratamento.',
+            mainComplaint: '',
+            familyHistory: '',
+            symptomOnset: '',
+            languageDevelopment: '',
+            additionalObservations: '',
           });
         }
       })
@@ -232,7 +165,6 @@ export default function MedicalRecordPage({
       .finally(() => setLoadingAnamnese(false));
 
     // 3. Carrega Diagnóstico
-    setLoadingDiag(true);
     getDiagnosticsByPatient(patient.id)
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
@@ -240,22 +172,20 @@ export default function MedicalRecordPage({
         if (list.length > 0) {
           setDiagForm({
             speechDiagnosis: list[0].speechDiagnosis || '',
-            cid10: list[0].cid10 || patient.cid10 || 'F80.0',
-            therapeuticArea: list[0].therapeuticArea || 'Linguagem',
-            sessionFrequency: list[0].sessionFrequency || '2x por semana · 50 min',
+            cid10: list[0].cid10 || patient.cid10 || '',
+            therapeuticArea: list[0].therapeuticArea || '',
+            sessionFrequency: list[0].sessionFrequency || '',
             treatmentGoal: list[0].treatmentGoal || '',
             treatmentPlan: list[0].treatmentPlan || '',
           });
         } else {
           setDiagForm({
-            speechDiagnosis: 'Disfluência da Fala (Gagueira do Desenvolvimento)',
-            cid10: patient.cid10 || 'F98.5',
-            therapeuticArea: 'Fluência / Linguagem',
-            sessionFrequency: '2x por semana · 50 min',
-            treatmentGoal:
-              '1. Reduzir frequência de disfluências em 60% em conversação espontânea.\n2. Desenvolver fluência e técnicas de respiração costodiafragmática.\n3. Fortalecer a autoconfiança na comunicação oral em sala de aula.',
-            treatmentPlan:
-              'Técnicas de controle de velocidade de fala, respiração costodiafragmática associada à fonação, pausas na comunicação, dessensibilização e jogos fonéticos gamificados no FonoSync.',
+            speechDiagnosis: '',
+            cid10: patient.cid10 || '',
+            therapeuticArea: '',
+            sessionFrequency: '',
+            treatmentGoal: '',
+            treatmentPlan: '',
           });
         }
       })
@@ -263,85 +193,23 @@ export default function MedicalRecordPage({
       .finally(() => setLoadingDiag(false));
 
     // 4. Carrega Avaliações
-    setLoadingEval(true);
     getEvaluationsByPatient(patient.id)
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
-        if (list.length > 0) {
-          setEvaluations(list);
-        } else {
-          setEvaluations([
-            {
-              id: 'eval-1',
-              tipoAvaliacao: 'Avaliação de Fluência',
-              dataAvaliacao: '2025-01-08',
-              resultados: 'Disfluência moderada com bloqueios e repetições.',
-              condutasPropostas: 'Protocolo de dessensibilização e respiração.',
-              responsavelNome: 'Dra. Renata Lima',
-              concluido: true,
-            },
-            {
-              id: 'eval-2',
-              tipoAvaliacao: 'Reavaliação parcial',
-              dataAvaliacao: '2025-02-10',
-              resultados: 'Melhora observada na leitura oral.',
-              condutasPropostas: 'Manter frequência de 2x semanais.',
-              responsavelNome: 'Dra. Renata Lima',
-              concluido: true,
-            },
-          ]);
-        }
+        setEvaluations(list);
       })
       .catch(() => setEvaluations([]))
       .finally(() => setLoadingEval(false));
 
     // 5. Carrega Anexos
-    setLoadingAtt(true);
     getAttachmentsByPatient(patient.id)
       .then((data) => {
         const list = Array.isArray(data) ? data : [];
-        if (list.length > 0) {
-          setAttachments(list);
-        } else {
-          setAttachments([
-            {
-              id: 'att-1',
-              fileName: 'audio_avaliacao_jan25.mp3',
-              tipoConteudo: 'audio/mp3',
-              attachmentDate: '2025-01-08',
-              fileSize: 4404019, // ~4.2 MB
-              description: 'Gravação da fala espontânea inicial',
-            },
-            {
-              id: 'att-2',
-              fileName: 'laudo_neuropediatra.pdf',
-              tipoConteudo: 'application/pdf',
-              attachmentDate: '2025-01-15',
-              fileSize: 1887436, // ~1.8 MB
-              description: 'Laudo médico neuropediátrico complementar',
-            },
-            {
-              id: 'att-3',
-              fileName: 'audio_reav_fev25.mp3',
-              tipoConteudo: 'audio/mp3',
-              attachmentDate: '2025-02-10',
-              fileSize: 3879731, // ~3.7 MB
-              description: 'Áudio comparativo de reavaliação parcial',
-            },
-            {
-              id: 'att-4',
-              fileName: 'exame_audiometria.jpg',
-              tipoConteudo: 'image/jpeg',
-              attachmentDate: '2025-02-12',
-              fileSize: 9017753, // ~8.6 MB
-              description: 'Audiometria tonal e vocal com audição normal',
-            },
-          ]);
-        }
+        setAttachments(list);
       })
       .catch(() => setAttachments([]))
       .finally(() => setLoadingAtt(false));
-  }, [activePatientId]);
+  }, [patient]);
 
   if (!patient) {
     return (
@@ -351,14 +219,15 @@ export default function MedicalRecordPage({
     );
   }
 
-  const isMinor = patient.age !== null && patient.age < 18;
+  const age = calculateAge(patient.dateOfBirth);
+  const isMinor = age !== null && age < 18;
   const sessionsCount = sessions.length;
   const totalAttachmentBytes = attachments.reduce((acc, att) => acc + (att.fileSize || 0), 0);
 
   // Manipuladores de Ações
   const handlePatientSelectChange = (e) => {
     const newId = e.target.value;
-    setActivePatientId(newId);
+    window.location.hash = `#/profissional/prontuario/${newId}`;
     if (onSelectPatient) {
       const p = patients.find((item) => item.id === newId);
       if (p) onSelectPatient(p);
@@ -412,23 +281,8 @@ export default function MedicalRecordPage({
     }
     setSavingAction(true);
     try {
-      try {
-        await createEvaluation(patient.id, evalForm);
-      } catch (err) {
-        console.warn('Erro na API de avaliação, mantendo em memória:', err);
-      }
-      setEvaluations([
-        {
-          id: `eval-${Date.now()}`,
-          tipoAvaliacao: evalForm.tipoAvaliacao,
-          dataAvaliacao: evalForm.dataAvaliacao,
-          resultados: evalForm.resultados,
-          condutasPropostas: evalForm.condutasPropostas,
-          responsavelNome: 'Dra. Renata Lima',
-          concluido: true,
-        },
-        ...evaluations,
-      ]);
+      const created = await createEvaluation(patient.id, evalForm);
+      setEvaluations([created, ...evaluations]);
       showFeedback('success', 'Nova avaliação adicionada com sucesso!');
       setShowNewEvalModal(false);
       setEvalForm({
@@ -438,6 +292,8 @@ export default function MedicalRecordPage({
         condutasPropostas: '',
         concluido: true,
       });
+    } catch (err) {
+      showFeedback('danger', err.message || 'Erro ao salvar avaliação.');
     } finally {
       setSavingAction(false);
     }
@@ -452,27 +308,14 @@ export default function MedicalRecordPage({
     }
     setUploading(true);
     try {
-      try {
-        const saved = await uploadAttachment(patient.id, uploadFile, uploadDesc);
-        setAttachments([saved, ...attachments]);
-      } catch (err) {
-        console.warn('Aviso ao subir arquivo na API, simulando em memória:', err);
-        setAttachments([
-          {
-            id: `att-${Date.now()}`,
-            fileName: uploadFile.name,
-            tipoConteudo: uploadFile.type || 'application/octet-stream',
-            attachmentDate: new Date().toISOString().split('T')[0],
-            fileSize: uploadFile.size,
-            description: uploadDesc,
-          },
-          ...attachments,
-        ]);
-      }
+      const saved = await uploadAttachment(patient.id, uploadFile, uploadDesc);
+      setAttachments([saved, ...attachments]);
       showFeedback('success', 'Arquivo anexado com sucesso ao prontuário!');
       setShowUploadModal(false);
       setUploadFile(null);
       setUploadDesc('');
+    } catch (err) {
+      showFeedback('danger', err.message || 'Erro ao enviar o arquivo.');
     } finally {
       setUploading(false);
     }
@@ -611,7 +454,7 @@ export default function MedicalRecordPage({
           >
             {patients.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.name} {p.age !== null ? `(${p.age} anos)` : ''}
+                {p.name} {calculateAge(p.dateOfBirth) !== null ? `(${calculateAge(p.dateOfBirth)} anos)` : ''}
               </option>
             ))}
           </select>
@@ -673,15 +516,15 @@ export default function MedicalRecordPage({
                 {patient.name}
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                {patient.age !== null ? `${patient.age} anos` : 'Idade não informada'} ·{' '}
-                {patient.sex === 'FEMININO' ? 'Feminino' : patient.sex === 'MASCULINO' ? 'Masculino' : 'Outro'} ·{' '}
-                CID {diagForm.cid10 || patient.cid10 || 'F80.0'}
+                {age !== null ? `${age} anos` : 'Idade não informada'} ·{' '}
+                {patient.sex === 'FEMININO' ? 'Feminino' : patient.sex === 'MASCULINO' ? 'Masculino' : 'Sexo não informado'}
+                {(diagForm.cid10 || patient.cid10) && ` · CID ${diagForm.cid10 || patient.cid10}`}
               </p>
             </div>
 
             <div className="inline-block">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                {patient.status || 'Em tratamento'}
+                {{ ATIVO: 'Em acompanhamento', PRE_CADASTRO: 'Pré-cadastro', ARQUIVADO: 'Arquivado' }[patient.patientStatus]}
               </span>
             </div>
 
@@ -695,25 +538,15 @@ export default function MedicalRecordPage({
               <div className="flex justify-between items-center py-1 border-b border-slate-50">
                 <span className="text-slate-400 font-medium">Responsável</span>
                 <span className="font-semibold text-slate-800">
-                  {guardian?.name || (isMinor ? 'Fernanda Ferreira' : 'Próprio paciente')}
+                  {guardian?.name || (isMinor ? '' : 'Próprio paciente')}
                 </span>
               </div>
 
               <div className="flex justify-between items-center py-1 border-b border-slate-50">
                 <span className="text-slate-400 font-medium">Tel</span>
                 <span className="font-semibold text-slate-800">
-                  {formatPhone(patient.phone || guardian?.phoneNumber) || '(11) 98765-4321'}
+                  {formatPhone(patient.contactPatient || guardian?.phoneNumber)}
                 </span>
-              </div>
-
-              <div className="flex justify-between items-center py-1 border-b border-slate-50">
-                <span className="text-slate-400 font-medium">Convênio</span>
-                <span className="font-semibold text-slate-800">Unimed</span>
-              </div>
-
-              <div className="flex justify-between items-center py-1 border-b border-slate-50">
-                <span className="text-slate-400 font-medium">Início</span>
-                <span className="font-semibold text-slate-800">08/01/2025</span>
               </div>
 
               <div className="flex justify-between items-center py-1">
@@ -729,9 +562,7 @@ export default function MedicalRecordPage({
               Objetivo Terapêutico
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              {diagForm.treatmentGoal
-                ? diagForm.treatmentGoal.split('\n')[0]
-                : 'Reduzir frequência de disfluências em 60% em situações de comunicação espontânea até julho/2025.'}
+              {diagForm.treatmentGoal.split('\n')[0]}
             </p>
           </div>
 
@@ -797,6 +628,13 @@ export default function MedicalRecordPage({
               );
             })}
           </div>
+
+          {(loadingAnamnese || loadingDiag || loadingEval || loadingAtt) && (
+            <p className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="size-4 animate-spin rounded-full border-2 border-slate-300 border-t-[#0284C7]" aria-hidden="true" />
+              Carregando prontuário...
+            </p>
+          )}
 
           {/* ========================================================== */}
           {/* ABA 1: HISTÓRICO (TIMELINE DE SESSÕES)                     */}
@@ -927,7 +765,7 @@ export default function MedicalRecordPage({
                             {ev.resultados}
                           </span>
                         </td>
-                        <td className="py-3 text-slate-600">{ev.responsavelNome || 'Dra. Renata Lima'}</td>
+                        <td className="py-3 text-slate-600">{ev.responsavelNome}</td>
                         <td className="py-3 text-right">
                           <button
                             type="button"
@@ -1064,7 +902,6 @@ export default function MedicalRecordPage({
                   Anamnese Fonoaudiológica
                 </h3>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-400 font-medium">08/01/2025</span>
                   <button
                     type="button"
                     onClick={() => setIsEditingAnamnese(!isEditingAnamnese)}
@@ -1213,11 +1050,6 @@ export default function MedicalRecordPage({
                       const isPdf =
                         att.fileName.endsWith('.pdf') ||
                         (att.tipoConteudo && att.tipoConteudo.includes('pdf'));
-                      const isImg =
-                        att.fileName.endsWith('.jpg') ||
-                        att.fileName.endsWith('.jpeg') ||
-                        att.fileName.endsWith('.png') ||
-                        (att.tipoConteudo && att.tipoConteudo.includes('image'));
 
                       const typeLabel = isAudio ? 'Áudio' : isPdf ? 'Documento' : 'Exame';
                       const badgeClass = isAudio
@@ -1477,7 +1309,7 @@ export default function MedicalRecordPage({
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-400 font-medium">Responsável:</span>
                 <span className="font-bold text-slate-800">
-                  {viewEvalDetail.responsavelNome || 'Dra. Renata Lima'}
+                  {viewEvalDetail.responsavelNome}
                 </span>
               </div>
               <div>

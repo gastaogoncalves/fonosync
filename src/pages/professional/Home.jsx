@@ -4,7 +4,7 @@ import Button from '../../components/Button';
 import Notice from '../../components/Notice';
 import { listPatients } from '../../services/patientService';
 import { listEvaluations } from '../../services/recordService';
-import { ageFrom, formatDate } from '../../utils/formatters';
+import { calculateAge, formatDateBR } from '../../utils/formatters';
 
 function Metric({ icon: Icon, label, value }) {
   return (
@@ -63,7 +63,7 @@ export default function Home({ onNavigate }) {
           <Button onClick={() => onNavigate('pacientes')}>
             <UserPlus size={16} aria-hidden="true" /> Novo paciente
           </Button>
-          <Button variant="secondary" onClick={() => onNavigate('prontuarios')}>
+          <Button variant="secondary" onClick={() => onNavigate('prontuario')}>
             <ClipboardList size={16} aria-hidden="true" /> Prontuários
           </Button>
         </div>
@@ -84,7 +84,7 @@ export default function Home({ onNavigate }) {
             <h3 className="text-lg text-navy">Acesso rápido aos prontuários</h3>
             <button
               type="button"
-              onClick={() => onNavigate('prontuarios')}
+              onClick={() => onNavigate('prontuario')}
               className="text-sm font-bold text-primary underline-offset-4 hover:underline"
             >
               Ver todos
@@ -93,7 +93,7 @@ export default function Home({ onNavigate }) {
           {!loading && recent.length === 0 && <p className="text-sm text-muted">Nenhum paciente cadastrado.</p>}
           <ul className="flex flex-col divide-y divide-line">
             {recent.map((patient) => {
-              const age = ageFrom(patient.dateOfBirth);
+              const age = calculateAge(patient.dateOfBirth);
               return (
                 <li key={patient.id}>
                   <a
@@ -123,7 +123,7 @@ export default function Home({ onNavigate }) {
                     <span className="block font-bold text-navy">{evaluation.paciente?.name}</span>
                     <span className="text-sm text-muted">{evaluation.tipoAvaliacao}</span>
                   </span>
-                  <span className="text-sm text-muted">{formatDate(evaluation.dataAvaliacao)}</span>
+                  <span className="text-sm text-muted">{formatDateBR(evaluation.dataAvaliacao)}</span>
                 </a>
               </li>
             ))}

@@ -4,7 +4,7 @@ export const AuthContext = createContext({
   session: null,
   login: async () => null,
   register: async () => null,
-  updateProfile: () => {},
+  updateSession: () => {},
   logout: () => {},
 });
 

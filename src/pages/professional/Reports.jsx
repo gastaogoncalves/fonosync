@@ -16,56 +16,7 @@ import {
 import { listPatients } from '../../services/patientService';
 import logoImg from '../../assets/images/ModeloA_Semnome.jpg';
 
-const initialDocuments = [
-  {
-    id: 'doc-1',
-    document: 'Relatório de Evolução Clínica',
-    patient: 'Maria Luiza Ferreira',
-    specialty: 'Fluência e Linguagem Infantil',
-    period: 'Jul–Set 2026',
-    createdAt: '30 set 2026',
-    status: 'Disponível',
-    format: 'PDF',
-    size: '1.4 MB',
-    summary: 'Evolução clínica com 24 sessões, avanço de 60% na redução de disfluências e controle de velocidade da fala.',
-  },
-  {
-    id: 'doc-2',
-    document: 'Atestado Fonoaudiológico de Comparecimento',
-    patient: 'João Pedro Alves',
-    specialty: 'Terapia de Voz e Motricidade',
-    period: '29 set 2026',
-    createdAt: '29 set 2026',
-    status: 'Assinado Digitalmente',
-    format: 'PDF',
-    size: '340 KB',
-    summary: 'Declaração formal de atendimento terapêutico das 14:00 às 15:00 para fins de justificativa escolar.',
-  },
-  {
-    id: 'doc-3',
-    document: 'Relatório Interdisciplinar para Neuropediatra',
-    patient: 'Carlos Eduardo Silva',
-    specialty: 'Neuropediatria & Linguagem',
-    period: 'Ago–Set 2026',
-    createdAt: '25 set 2026',
-    status: 'Emitido',
-    format: 'PDF',
-    size: '2.1 MB',
-    summary: 'Sumário clínico com conduta terapêutica, hipótese diagnóstica CID-10 F80.0 e resposta a estímulos cognitivos.',
-  },
-  {
-    id: 'doc-4',
-    document: 'Relatório Fonoaudiológico para Equipe Escolar',
-    patient: 'Valentina Souza',
-    specialty: 'Linguagem e Fala Infantil',
-    period: 'Set 2026',
-    createdAt: '18 set 2026',
-    status: 'Disponível',
-    format: 'PDF',
-    size: '1.1 MB',
-    summary: 'Orientações pedagógicas para facilitação da comunicação em sala de aula e reforço fonoaudiológico.',
-  },
-];
+const initialDocuments = [];
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState('gerar'); // 'gerar' | 'historico' | 'atestados' | 'importar'
@@ -86,13 +37,13 @@ export default function Reports() {
 
   // Interdisciplinar
   const [targetSpecialty, setTargetSpecialty] = useState('Neuropediatria');
-  const [doctorName, setDoctorName] = useState('Dr. Rodrigo Albuquerque (Neuropediatra)');
+  const [doctorName, setDoctorName] = useState('');
   const [conductNotes, setConductNotes] = useState(
     'Paciente em acompanhamento fonoaudiológico semanal com foco em fluência da fala e processamento auditivo central.'
   );
 
   // Atestado
-  const [atestadoPatient, setAtestadoPatient] = useState('Maria Luiza Ferreira');
+  const [atestadoPatient, setAtestadoPatient] = useState('');
   const [atestadoDate, setAtestadoDate] = useState(new Date().toISOString().split('T')[0]);
   const [atestadoTime, setAtestadoTime] = useState('14:30');
   const [atestadoDuration, setAtestadoDuration] = useState('50 minutos');
@@ -191,7 +142,6 @@ export default function Reports() {
     };
 
     setDocuments([newDoc, ...documents]);
-    setShowAtestadoModal(false);
     showNotification(`Atestado fonoaudiológico oficial emitido e assinado digitalmente!`);
     setPreviewDoc(newDoc);
   };

@@ -13,19 +13,18 @@ const fields = [
 ];
 
 export default function SettingsPage() {
-  const { session, updateProfile } = useAuth();
+  const { session, updateSession } = useAuth();
   const [profile, setProfile] = useState(() => ({
-    name: '',
-    crfa: '',
-    phone: '',
-    specialty: '',
-    ...session?.profile,
+    name: session?.name ?? '',
+    crfa: session?.crfa ?? '',
+    phone: session?.phone ?? '',
+    specialty: session?.specialty ?? '',
   }));
   const [saved, setSaved] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateProfile(profile);
+    updateSession(profile);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

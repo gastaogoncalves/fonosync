@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, UserPlus, Pencil, FolderArchive, ChevronRight, X, Save, CheckCircle2, CircleAlert, RotateCcw, Trash2 } from 'lucide-react';
-import {
-  archivePatient,
-  createGuardian,
-  createPatient,
-  deletePatient,
-  listPatients,
-  updatePatient,
-} from '../../services/patientService';
-import PatientRecordModal from './PatientRecordModal';
-import { formatCPF, formatPhone } from '../../utils/formatters';
+import { Search, Filter, UserPlus, Pencil, FolderArchive, ChevronRight, X, Save, CheckCircle2, CircleAlert } from 'lucide-react';
+import { createGuardian, createPatient, listPatients, updatePatient } from '../../services/patientService';
+import { formatCPF } from '../../utils/formatters';
 
 const STATUS = {
   ATIVO: { label: 'Em acompanhamento', type: 'acompanhamento' },
@@ -57,9 +49,7 @@ export default function Patients({ onOpenProntuario }) {
   const [activeTab, setActiveTab] = useState('todos'); // 'todos', 'acompanhamento', 'pre-cadastro', 'arquivados'
 
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
-  const [showRecordModal, setShowRecordModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState(null);
   const [editingPatient, setEditingPatient] = useState(null);
   const [notice, setNotice] = useState(null);
 
@@ -108,49 +98,12 @@ export default function Patients({ onOpenProntuario }) {
     return matchesSearch;
   });
 
-  const handleOpenRecord = (patient) => {
-    if (onOpenProntuario) {
-      onOpenProntuario(patient);
-    } else {
-      setSelectedPatient(patient);
-      setShowRecordModal(true);
-    }
-  };
+  const handleOpenRecord = (patient) => onOpenProntuario(patient);
 
   const replacePatient = (updated) => {
     const row = toRow(updated);
     setPatients((current) => current.map((p) => (p.id === row.id ? row : p)));
     return row;
-  };
-
-  const handleToggleArchive = async (patient) => {
-    try {
-      if (patient.archived) {
-        const { id, name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId } = patient;
-        replacePatient(
-          await updatePatient(id, { name, dateOfBirth, cpfPatient, contactPatient, sex, cid10, guardianId, patientStatus: 'ATIVO' }),
-        );
-        showNotice('success', `${patient.name} voltou para os pacientes ativos.`);
-      } else {
-        replacePatient(await archivePatient(patient.id));
-        showNotice('success', `Prontuário de ${patient.name} arquivado.`);
-      }
-    } catch (error) {
-      showNotice('danger', error.message);
-    }
-    setShowRecordModal(false);
-  };
-
-  const handleDelete = async (patient) => {
-    if (!window.confirm(`Excluir ${patient.name} permanentemente? Essa ação não pode ser desfeita.`)) return;
-    try {
-      await deletePatient(patient.id);
-      setPatients((current) => current.filter((p) => p.id !== patient.id));
-      showNotice('success', `${patient.name} foi excluído.`);
-    } catch (error) {
-      showNotice('danger', error.message);
-    }
-    setShowRecordModal(false);
   };
 
   const openNewPatient = () => {
@@ -170,7 +123,6 @@ export default function Patients({ onOpenProntuario }) {
       sex: patient.sex ?? '',
       cid10: patient.cid10 ?? '',
     });
-    setShowRecordModal(false);
     setShowNewPatientModal(true);
   };
 
@@ -228,7 +180,6 @@ export default function Patients({ onOpenProntuario }) {
     }
   };
 
-  const activePatientsCount = patients.filter(p => !p.archived).length;
   const archivedPatientsCount = patients.filter(p => p.archived).length;
 
   return (
@@ -377,6 +328,16 @@ export default function Patients({ onOpenProntuario }) {
                       </span>
                     </td>
                     <td className="py-4 px-6 text-right">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditPatient(patient);
+                        }}
+                        className="mr-4 text-slate-600 hover:text-[#0284C7] font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Pencil size={13} /> Editar
+                      </button>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -625,16 +586,6 @@ export default function Patients({ onOpenProntuario }) {
         </div>
       )}
 
-      {showRecordModal && selectedPatient && (
-        <PatientRecordModal
-          patient={selectedPatient}
-          isOpen={showRecordModal}
-          onClose={() => setShowRecordModal(false)}
-          onEdit={openEditPatient}
-          onToggleArchive={handleToggleArchive}
-          onDelete={handleDelete}
-        />
-      )}
 
     </div>
   );
